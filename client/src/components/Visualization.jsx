@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
 import { motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";

@@ -1,4 +1,3 @@
-import React from "react";
 import diabetesImg from "../assets/diabetes.jpeg";
 import dataInfoImg from "../assets/dataInfo.jpeg";
 import predictionImg from "../assets/prediction.jpeg";

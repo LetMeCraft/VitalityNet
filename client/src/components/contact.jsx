@@ -1,4 +1,3 @@
-import React from "react";
 import backgroundImage from "../assets/background.jpg";
 import contactBackground from "../assets/contact-bg.jpg";
 

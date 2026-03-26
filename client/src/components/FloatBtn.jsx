@@ -1,8 +1,6 @@
-'use client';
-
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { FaArrowUp } from "react-icons/fa";
 import { animateScroll } from 'react-scroll';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const BackToTop = () => {
   const [showButton, setShowButton] = useState(false);
@@ -52,10 +50,6 @@ const BackToTop = () => {
     height: '42px'
   };
 
-  const iconStyles = {
-    fontSize: '20px'
-  };
-
   return (
     <>
       <style>{`
@@ -75,7 +69,7 @@ const BackToTop = () => {
         onClick={handleClick}
         style={buttonStyles}
       >
-        <i className="fas fa-arrow-up" style={iconStyles}></i>
+        <FaArrowUp style={{ fontSize: '16px' }} />
       </button>
     </>
   );
