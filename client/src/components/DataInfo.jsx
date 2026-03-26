@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import * as Papa from "papaparse";
 import _ from "lodash";
-import Loader from "./Loader"; // Import the Loader component
+import Loader from "./Loader";
 
 function DataInfo() {
   const [data, setData] = useState([]);
@@ -70,44 +70,42 @@ function DataInfo() {
           className="overflow-x-auto overflow-y-auto rounded-lg shadow-lg mx-10"
           style={{ maxHeight: "420px" }}
         >
-          <div className="">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  {Object.keys(data[0]).map((header, index) => (
-                    <th
-                      key={index}
-                      onClick={() => handleSort(header)}
-                      className="px-4 py-2 bg-purple-100 text-purple-800 sticky top-0 font-bold border cursor-pointer relative"
-                    >
-                      {header}
-                      <span className="absolute right-0 top-1/2 transform -translate-y-1/2">
-                        {sortedColumn === header
-                          ? sortDirection === "asc"
-                            ? " ▲"
-                            : " ▼"
-                          : "▼"}
-                      </span>
-                    </th>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                {Object.keys(data[0]).map((header, index) => (
+                  <th
+                    key={index}
+                    onClick={() => handleSort(header)}
+                    className="px-4 py-2 bg-purple-100 text-purple-800 sticky top-0 font-bold border cursor-pointer relative"
+                  >
+                    {header}
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs">
+                      {sortedColumn === header
+                        ? sortDirection === "asc"
+                          ? "ASC"
+                          : "DESC"
+                        : ""}
+                    </span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sortedData.map((row, index) => (
+                <tr key={index}>
+                  {Object.values(row).map((value, cellIndex) => (
+                    <td key={cellIndex} className="px-4 py-2 border">
+                      {value}
+                    </td>
                   ))}
                 </tr>
-              </thead>
-              <tbody>
-                {sortedData.map((row, index) => (
-                  <tr key={index}>
-                    {Object.values(row).map((value, index) => (
-                      <td key={index} className="px-4 py-2 border">
-                        {value}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </motion.div>
       ) : (
-        <Loader /> // Display the loader while data is being fetched
+        <Loader />
       )}
     </div>
   );

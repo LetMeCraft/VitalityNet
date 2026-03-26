@@ -1,7 +1,15 @@
+import { useState } from "react";
 import backgroundImage from "../assets/background.jpg";
 import contactBackground from "../assets/contact-bg.jpg";
 
 const ContactUs = () => {
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setSubmitted(true);
+  };
+
   return (
     <div
       className="min-h-screen bg-gradient-to-r from-purple-500 to-pink-500 flex flex-col items-center justify-center sm:flex-row sm:justify-center pb-3 md:pb-0"
@@ -19,12 +27,12 @@ const ContactUs = () => {
           backgroundPosition: "center",
         }}
       >
-        <div className="flex justify-center items-center"></div>
+        <div className="hidden md:block" />
         <div className="flex flex-col justify-center p-5">
           <h2 className="mb-5 text-gray-800 font-sans font-extrabold text-2xl">
             Get in touch!
           </h2>
-          <form className="flex flex-col gap-4">
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <input
               type="text"
               id="name"
@@ -53,6 +61,12 @@ const ContactUs = () => {
               Submit
             </button>
           </form>
+          {submitted ? (
+            <p className="mt-4 rounded-lg bg-white/80 px-4 py-3 text-sm text-gray-700">
+              Message captured in the UI. Connect this form to an email or API
+              service when you want real submissions.
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

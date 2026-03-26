@@ -2,54 +2,75 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+const fieldDefinitions = [
+  { name: "Pregnancies", label: "Pregnancies", step: "1" },
+  { name: "Glucose", label: "Glucose", step: "0.1" },
+  { name: "BloodPressure", label: "Blood Pressure", step: "0.1" },
+  { name: "SkinThickness", label: "Skin Thickness", step: "0.1" },
+  { name: "Insulin", label: "Insulin", step: "0.1" },
+  { name: "BMI", label: "BMI", step: "0.1" },
+  {
+    name: "DiabetesPedigreeFunction",
+    label: "Diabetes Pedigree Function",
+    step: "0.01",
+  },
+  { name: "Age", label: "Age", step: "1" },
+];
+
+const initialUserInput = Object.fromEntries(
+  fieldDefinitions.map(({ name }) => [name, ""]),
+);
+
 const Prediction = () => {
-  const [userInput, setUserInput] = useState({
-    Age: "",
-    Pregnancies: "",
-    BloodPressure: "",
-    BMI: "",
-  });
-  const [ppgFile, setPpgFile] = useState(null);
+  const [userInput, setUserInput] = useState(initialUserInput);
   const [prediction, setPrediction] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
 
-  const handleChange = (e) => {
-    setUserInput({ ...userInput, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setUserInput((currentInput) => ({
+      ...currentInput,
+      [name]: value,
+    }));
   };
 
-  const handleFileChange = (e) => {
-    setPpgFile(e.target.files[0]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setButtonDisabled(true);
+    setErrorMessage("");
 
-    const formData = new FormData();
-    Object.keys(userInput).forEach((key) => formData.append(key, userInput[key]));
-    if (ppgFile) formData.append("ppg_file", ppgFile);
+    const payload = Object.fromEntries(
+      Object.entries(userInput).map(([key, value]) => [key, Number(value)]),
+    );
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/predict", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const response = await axios.post(`${API_BASE_URL}/predict`, payload, {
+        headers: { "Content-Type": "application/json" },
       });
       setPrediction(response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error("Error:", error);
-      alert("Error while predicting. Please check backend connection or data format.");
+      const apiError =
+        error.response?.data?.error ||
+        "Prediction failed. Please check the backend server and your input values.";
+      setPrediction(null);
+      setErrorMessage(apiError);
+    } finally {
+      setButtonDisabled(false);
     }
-    setButtonDisabled(false);
   };
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  const isHighRisk = prediction?.result === "High Risk";
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-600 via-pink-500 to-red-400 flex flex-col items-center justify-center py-10">
-      <div className="flex flex-col sm:flex-row items-center justify-center w-full max-w-7xl px-5">
-        {/* LEFT CARD - INPUT FORM */}
+      <div className="flex flex-col sm:flex-row items-start justify-center w-full max-w-7xl px-5">
         <motion.div
           initial={{ opacity: 0, x: -150 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -62,48 +83,44 @@ const Prediction = () => {
           }}
           className="bg-white/30 backdrop-blur-xl rounded-2xl shadow-2xl p-10 w-full sm:w-1/2 border border-white/40"
         >
-          <h1 className="text-3xl font-extrabold mb-8 text-center text-white drop-shadow-lg">
-            PPG & Clinical Diabetes Predictor
+          <h1 className="text-3xl font-extrabold mb-3 text-center text-white drop-shadow-lg">
+            Clinical Diabetes Predictor
           </h1>
+          <p className="text-center text-white/90 mb-8">
+            Enter the eight clinical values used by the Flask model to get a
+            diabetes risk prediction.
+          </p>
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {Object.keys(userInput).map((field) => (
-                <div key={field}>
+              {fieldDefinitions.map(({ name, label, step }) => (
+                <div key={name}>
                   <label
-                    htmlFor={field}
+                    htmlFor={name}
                     className="block text-white font-semibold mb-2 tracking-wide"
                   >
-                    {field}
+                    {label}
                   </label>
                   <input
+                    id={name}
                     type="number"
-                    name={field}
-                    value={userInput[field]}
+                    name={name}
+                    step={step}
+                    min="0"
+                    required
+                    value={userInput[name]}
                     onChange={handleChange}
-                    className="w-full bg-white/70 border border-purple-200 text-gray-800 rounded-md px-3 py-2 
-                               focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full bg-white/70 border border-purple-200 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
               ))}
-
-              {/* File Upload Field */}
-              <div className="sm:col-span-2 mt-3">
-                <label
-                  htmlFor="ppg_file"
-                  className="block text-white font-semibold mb-2 tracking-wide"
-                >
-                  Upload PPG Signal (.csv / .txt)
-                </label>
-                <input
-                  type="file"
-                  accept=".csv,.txt"
-                  onChange={handleFileChange}
-                  className="w-full bg-white/80 border border-purple-200 text-gray-700 rounded-md px-3 py-2 
-                             cursor-pointer hover:border-purple-400 transition duration-300"
-                />
-              </div>
             </div>
+
+            {errorMessage ? (
+              <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            ) : null}
 
             <div className="flex justify-center mt-8">
               <button
@@ -121,7 +138,6 @@ const Prediction = () => {
           </form>
         </motion.div>
 
-        {/* RIGHT CARD - RESULT OR INFO */}
         <motion.div
           initial={{ opacity: 0, x: 150 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -137,30 +153,27 @@ const Prediction = () => {
           {!prediction ? (
             <>
               <h2 className="text-2xl font-bold text-white text-center mb-4">
-                About This Model
+                How This Page Works
               </h2>
               <ul className="list-disc pl-6 space-y-2 text-white/90 text-justify">
                 <li>
-                  This model uses <strong>clinical data</strong> such as Age, BMI, 
-                  and Blood Pressure along with <strong>PPG waveform analysis</strong> 
-                  for diabetes prediction.
+                  The frontend sends clinical values as JSON to the Flask API at
+                  `/predict`.
                 </li>
                 <li>
-                  The uploaded PPG signal is processed to detect patterns in blood 
-                  flow, waveform shape, and variability that correlate with diabetic 
-                  physiology.
+                  The server scales the values with `scaler.pkl` and predicts
+                  with `nb.pkl`.
                 </li>
                 <li>
-                  AI extracts features like <strong>pulse interval</strong>, 
-                  <strong> amplitude variance</strong>, <strong>skewness</strong>, 
-                  and <strong>kurtosis</strong> for prediction.
+                  This page now reflects the real backend behavior and no longer
+                  asks for unsupported PPG file uploads.
                 </li>
               </ul>
             </>
           ) : (
             <div
               className={`mx-auto flex flex-col gap-5 py-6 px-4 rounded-xl text-center ${
-                prediction.result === "Diabetic"
+                isHighRisk
                   ? "bg-red-100 border border-red-500 text-red-700"
                   : "bg-green-100 border border-green-500 text-green-700"
               }`}
@@ -168,11 +181,14 @@ const Prediction = () => {
               <h2 className="text-3xl font-extrabold">
                 Prediction Result: {prediction.result}
               </h2>
-              <p className="text-md font-medium">
-                {prediction.result === "Diabetic"
-                  ? "⚠️ The results indicate a high likelihood of diabetes based on your data."
-                  : "✅ Your data suggests non-diabetic characteristics."}
-              </p>
+              <p className="text-md font-medium">{prediction.prediction}</p>
+              {prediction.gif_url ? (
+                <img
+                  src={prediction.gif_url}
+                  alt={prediction.result}
+                  className="mx-auto rounded-xl max-h-64 object-contain"
+                />
+              ) : null}
             </div>
           )}
         </motion.div>

@@ -1,7 +1,7 @@
 import diabetesImg from "../assets/diabetes.jpeg";
-import dataInfoImg from "../assets/dataInfo.jpeg";
-import predictionImg from "../assets/prediction.jpeg";
-import visualizationImg from "../assets/Visualization.jpeg";
+import dataInsightsImg from "../assets/home-data-insights.jpg";
+import predictiveAnalyticsImg from "../assets/home-predictive-analytics.jpg";
+import dataVisualizationImg from "../assets/home-data-visualization.jpg";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Testimonials from "./Testimonials/Testimonials.jsx";
@@ -9,7 +9,6 @@ import Testimonials from "./Testimonials/Testimonials.jsx";
 const Home = () => {
   return (
     <div className="overflow-x-hidden font-[Poppins] bg-gradient-to-br from-blue-50 via-white to-purple-100">
-      {/* HERO SECTION */}
       <div
         className="relative flex flex-col items-center justify-center h-screen w-full text-center"
         style={{
@@ -34,9 +33,9 @@ const Home = () => {
           </h1>
 
           <p className="text-lg md:text-xl font-medium text-blue-100">
-            Empowering doctors with intelligent diagnostics — leveraging
-            photoplethysmographic (PPG) signals & clinical data for early
-            diabetes detection.
+            Empowering doctors with intelligent diagnostics using clinical
+            screening data and interactive visual summaries for early diabetes
+            detection.
           </p>
 
           <motion.div
@@ -46,8 +45,7 @@ const Home = () => {
           >
             <Link
               to="/prediction"
-              className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 
-              text-white rounded-full font-semibold tracking-wide shadow-lg transition-all duration-300"
+              className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white rounded-full font-semibold tracking-wide shadow-lg transition-all duration-300"
             >
               Get Started
             </Link>
@@ -55,7 +53,6 @@ const Home = () => {
         </motion.div>
       </div>
 
-      {/* FEATURES SECTION */}
       <div className="container mx-auto py-20 px-6">
         <motion.h2
           initial={{ opacity: 0, y: 80 }}
@@ -67,7 +64,6 @@ const Home = () => {
           Core Features
         </motion.h2>
 
-        {/* Feature Card 1 */}
         <motion.div
           className="flex flex-col md:flex-row items-center justify-between bg-white/60 backdrop-blur-md shadow-xl rounded-3xl overflow-hidden border border-indigo-100 mb-16"
           initial={{ opacity: 0, x: -80 }}
@@ -76,7 +72,7 @@ const Home = () => {
           transition={{ duration: 1 }}
         >
           <img
-            src={dataInfoImg}
+            src={dataInsightsImg}
             alt="Data Insights"
             className="w-full md:w-1/2 object-cover h-64 md:h-96"
           />
@@ -85,9 +81,9 @@ const Home = () => {
               Data Insights
             </h3>
             <p className="text-base mb-6 leading-relaxed">
-              Explore real-time patient metrics and understand the data patterns
-              used in our diabetes prediction system. Gain deeper insights into
-              clinical attributes and PPG waveform behavior.
+              Explore patient metrics and understand the data patterns used in
+              our diabetes prediction system. Gain deeper insight into the
+              clinical attributes behind the model.
             </p>
             <Link
               to="/data-info"
@@ -98,7 +94,6 @@ const Home = () => {
           </div>
         </motion.div>
 
-        {/* Feature Card 2 */}
         <motion.div
           className="flex flex-col md:flex-row-reverse items-center justify-between bg-white/60 backdrop-blur-md shadow-xl rounded-3xl overflow-hidden border border-indigo-100 mb-16"
           initial={{ opacity: 0, x: 80 }}
@@ -107,7 +102,7 @@ const Home = () => {
           transition={{ duration: 1 }}
         >
           <img
-            src={predictionImg}
+            src={predictiveAnalyticsImg}
             alt="Prediction Module"
             className="w-full md:w-1/2 object-cover h-64 md:h-96"
           />
@@ -116,9 +111,9 @@ const Home = () => {
               Predictive Analytics
             </h3>
             <p className="text-base mb-6 leading-relaxed">
-              Upload PPG signals and clinical metrics to receive accurate
-              AI-based diagnostic predictions. This model aids doctors in
-              identifying diabetic risks before critical onset.
+              Enter the clinical metrics used by our trained model to receive
+              AI-based diabetes risk predictions. The workflow reflects the
+              Flask API that powers this project.
             </p>
             <Link
               to="/prediction"
@@ -129,7 +124,6 @@ const Home = () => {
           </div>
         </motion.div>
 
-        {/* Feature Card 3 */}
         <motion.div
           className="flex flex-col md:flex-row items-center justify-between bg-white/60 backdrop-blur-md shadow-xl rounded-3xl overflow-hidden border border-indigo-100"
           initial={{ opacity: 0, x: -80 }}
@@ -138,7 +132,7 @@ const Home = () => {
           transition={{ duration: 1 }}
         >
           <img
-            src={visualizationImg}
+            src={dataVisualizationImg}
             alt="Visualization Dashboard"
             className="w-full md:w-1/2 object-cover h-64 md:h-96"
           />
@@ -147,9 +141,8 @@ const Home = () => {
               Data Visualization
             </h3>
             <p className="text-base mb-6 leading-relaxed">
-              Get an intuitive understanding of data relationships and PPG
-              feature distributions through interactive graphs and charts
-              designed for medical professionals.
+              Get an intuitive understanding of data relationships through
+              interactive graphs and charts designed for medical professionals.
             </p>
             <Link
               to="/visualization"
@@ -161,7 +154,6 @@ const Home = () => {
         </motion.div>
       </div>
 
-      {/* TESTIMONIALS SECTION */}
       <motion.div
         initial={{ opacity: 0, y: 80 }}
         whileInView={{ opacity: 1, y: 0 }}

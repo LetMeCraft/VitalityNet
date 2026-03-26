@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import logo_final from "../assets/logo_final.png";
+import logo from "../assets/vitalitynet-logo.svg";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,21 +14,18 @@ const Navbar = () => {
     setIsOpen(false);
   };
 
-  const logoStyle = {
-    height: "60px",
-    width: "60px",
-    borderRadius: "50%",
-    marginRight: "10px",
-  };
-
   return (
     <nav className="bg-gray-800 sticky z-50 top-0" style={{ height: "5rem" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
-            <Link to="/" className="text-white font-bold flex items-center">
-              <img src={logo_final} alt="Logo" style={logoStyle} />
-              <span className="ml-2">PreDiaBet</span>
+            <Link to="/" className="text-white font-bold flex items-center gap-3">
+              <img
+                src={logo}
+                alt="VitalityNet Logo"
+                className="h-14 w-14 shrink-0 drop-shadow-[0_10px_24px_rgba(129,140,248,0.35)]"
+              />
+              <span className="text-lg tracking-wide text-slate-50">VitalityNet</span>
             </Link>
           </div>
           <div className="hidden 850px:block">
@@ -44,6 +41,9 @@ const Navbar = () => {
               </NavLink>
               <NavLink to="/visualization" onClick={closeMenu}>
                 Visualization
+              </NavLink>
+              <NavLink to="/contact" onClick={closeMenu}>
+                Contact Us
               </NavLink>
               <NavLink to="/FAQ" onClick={closeMenu}>
                 FAQ

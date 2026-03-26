@@ -1,0 +1,60 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vitalitynetPulse" x1="88" y1="130" x2="430" y2="334" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="0.5" stop-color="#818CF8"/>
+      <stop offset="1" stop-color="#C084FC"/>
+    </linearGradient>
+    <filter id="vitalitynetGlow" x="42" y="60" width="428" height="334" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="5" result="effect1_foregroundBlur_0_1"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#vitalitynetGlow)" opacity="0.24">
+    <path
+      d="M74 290H149L195 179L255 372L285 259L307 290L357 94H392L343 290H391L425 227L452 290H438"
+      stroke="url(#vitalitynetPulse)"
+      stroke-width="22"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M180 257L229 143L280 278L310 218"
+      stroke="url(#vitalitynetPulse)"
+      stroke-width="22"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M297 289L317 334L349 289"
+      stroke="url(#vitalitynetPulse)"
+      stroke-width="22"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <path
+    d="M74 290H149L195 179L255 372L285 259L307 290L357 94H392L343 290H391L425 227L452 290H438"
+    stroke="url(#vitalitynetPulse)"
+    stroke-width="16"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M180 257L229 143L280 278L310 218"
+    stroke="url(#vitalitynetPulse)"
+    stroke-width="16"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M297 289L317 334L349 289"
+    stroke="url(#vitalitynetPulse)"
+    stroke-width="16"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
