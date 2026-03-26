@@ -1,0 +1,15 @@
+client/node_modules/
+client/dist/
+client/.vite/
+
+server/venv/
+server/.venv/
+server/__pycache__/
+server/.pytest_cache/
+*.pyc
+
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+.env
+.env.*
