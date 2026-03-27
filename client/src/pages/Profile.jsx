@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import {
+  FaGithub,
+  FaInstagram,
+  FaLinkedinIn,
+} from "react-icons/fa";
+import { SiLeetcode } from "react-icons/si";
 import { Link } from "react-router-dom";
+import ProfileStarfield from "../components/ProfileStarfield";
 import { useAuth } from "../context/AuthContext";
 import {
   getLocalPredictionHistory,
@@ -17,6 +24,29 @@ const dateFormatter = new Intl.DateTimeFormat("en-IN", {
 });
 
 const formatFeatureLabel = (value) => value.replace(/([A-Z])/g, " $1").trim();
+
+const socialLinks = [
+  {
+    href: "https://www.linkedin.com/in/yourprofile",
+    icon: FaLinkedinIn,
+    label: "LinkedIn",
+  },
+  {
+    href: "https://github.com/yourusername",
+    icon: FaGithub,
+    label: "GitHub",
+  },
+  {
+    href: "https://leetcode.com/yourusername",
+    icon: SiLeetcode,
+    label: "LeetCode",
+  },
+  {
+    href: "https://www.instagram.com/yourusername",
+    icon: FaInstagram,
+    label: "Instagram",
+  },
+];
 
 const ProfilePage = () => {
   const { loading, logout, user } = useAuth();
@@ -108,37 +138,37 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="page-shell">
+      <CosmicFrame>
         <div className="page-container">
-          <div className="surface-card px-6 py-8 md:px-8">
-            <p className="text-lg text-slate-600">Loading your profile...</p>
+          <div className="cosmic-card px-6 py-8 md:px-8">
+            <p className="text-lg cosmic-copy">Loading your profile...</p>
           </div>
         </div>
-      </div>
+      </CosmicFrame>
     );
   }
 
   if (!user) {
     return (
-      <div className="page-shell">
+      <CosmicFrame>
         <div className="page-container grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="surface-card px-6 py-8 md:px-8 md:py-10">
-            <span className="eyebrow">Profile Access</span>
-            <h1 className="section-title mt-4">
+          <section className="cosmic-card px-6 py-8 md:px-8 md:py-10">
+            <span className="cosmic-badge">Profile Access</span>
+            <h1 className="section-title cosmic-title mt-4">
               Sign in to unlock your personal dashboard.
             </h1>
-            <p className="section-copy mt-4 max-w-2xl">
+            <p className="section-copy cosmic-copy mt-4 max-w-2xl">
               Once you log in, you will see your account details and the prediction
               records saved for your profile.
             </p>
           </section>
 
-          <section className="surface-card px-6 py-8 md:px-8">
-            <p className="text-sm font-medium text-slate-500">Not Signed In</p>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900">
+          <section className="cosmic-card px-6 py-8 md:px-8">
+            <p className="text-sm font-medium cosmic-label">Not Signed In</p>
+            <h2 className="mt-3 text-2xl font-semibold cosmic-title">
               Your profile is ready when you are.
             </h2>
-            <p className="mt-3 text-slate-600">
+            <p className="mt-3 cosmic-copy">
               Log in with email or Google to view your saved prediction activity.
             </p>
             <Link to="/auth" className="primary-btn mt-8">
@@ -146,7 +176,7 @@ const ProfilePage = () => {
             </Link>
           </section>
         </div>
-      </div>
+      </CosmicFrame>
     );
   }
 
@@ -154,7 +184,6 @@ const ProfilePage = () => {
     user.displayName?.trim() || user.email?.split("@")[0] || "VitalityNet User";
   const firstName = profileName.split(" ")[0] || profileName;
   const profileEmail = user.email || "Signed in with Google";
-  const profileInitial = profileName.charAt(0).toUpperCase();
   const providerNames = (user.providerData || [])
     .map((provider) => {
       if (provider.providerId === "google.com") {
@@ -172,41 +201,28 @@ const ProfilePage = () => {
   const providerLabel = providerNames.length ? providerNames.join(", ") : "Firebase";
 
   return (
-    <div className="page-shell">
+    <CosmicFrame>
       <div className="page-container space-y-8">
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="surface-card px-6 py-8 md:px-8 md:py-10"
+          className="cosmic-card px-6 py-8 md:px-8 md:py-10"
         >
           <div className="grid gap-8 lg:grid-cols-[1.25fr_0.85fr]">
             <div>
-              <span className="eyebrow">Profile</span>
-              <div className="mt-6 flex items-center gap-5">
-                {user.photoURL ? (
-                  <img
-                    src={user.photoURL}
-                    alt={profileName}
-                    className="h-20 w-20 rounded-[1.5rem] border border-[var(--border-soft)] object-cover"
-                  />
-                ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-cyan-300 text-3xl font-bold text-slate-950">
-                    {profileInitial}
-                  </div>
-                )}
-                <div>
-                  <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-                    {profileName}
-                  </h1>
-                  <p className="mt-2 text-lg text-slate-600">{profileEmail}</p>
-                </div>
+              <span className="cosmic-badge">Profile</span>
+              <div className="mt-6">
+                <h1 className="text-4xl font-bold tracking-tight cosmic-title md:text-5xl">
+                  {profileName}
+                </h1>
+                <p className="mt-2 text-lg cosmic-copy">{profileEmail}</p>
               </div>
 
-              <p className="mt-8 max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
-                Welcome back, {firstName}. This page keeps your account details together
-                and shows the predictions you made while signed in.
+              <p className="mt-8 max-w-3xl text-base leading-8 cosmic-copy md:text-lg">
+                Welcome back, {firstName}. This space keeps your account details together
+                and lets you revisit the predictions you saved while signed in.
               </p>
 
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -220,10 +236,34 @@ const ProfilePage = () => {
                   value={user.emailVerified ? "Verified" : "Active"}
                 />
               </div>
+
+              <div className="mt-8 cosmic-card-soft p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-100/80">
+                      Connect with Owner
+                    </p>
+                    <p className="mt-2 text-sm cosmic-copy">
+                      Reach out or check out my work through these platforms. 
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {socialLinks.map((item) => (
+                    <SocialLink
+                      key={item.label}
+                      href={item.href}
+                      icon={item.icon}
+                      label={item.label}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="surface-card-soft p-6">
-              <h2 className="text-xl font-semibold text-slate-900">Account details</h2>
+            <div className="cosmic-card-soft p-6">
+              <h2 className="text-xl font-semibold cosmic-title">Account details</h2>
               <dl className="mt-6 space-y-5">
                 <DetailRow label="Full name" value={profileName} />
                 <DetailRow label="Email" value={profileEmail} />
@@ -236,16 +276,14 @@ const ProfilePage = () => {
                 <Link to="/prediction" className="primary-btn w-full justify-center">
                   Create new prediction
                 </Link>
-                <Link to="/visualization" className="secondary-btn w-full justify-center">
+                <Link to="/visualization" className="cosmic-action-btn">
                   Explore visualizations
                 </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
                   disabled={signOutLoading}
-                  className={`secondary-btn w-full justify-center ${
-                    signOutLoading ? "cursor-not-allowed opacity-60" : ""
-                  }`}
+                  className={`cosmic-action-btn ${signOutLoading ? "cursor-not-allowed opacity-60" : ""}`}
                 >
                   {signOutLoading ? "Signing Out..." : "Sign Out"}
                 </button>
@@ -259,19 +297,19 @@ const ProfilePage = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.05 }}
-          className="surface-card overflow-hidden"
+          className="cosmic-card overflow-hidden"
         >
-          <div className="border-b border-[var(--border-soft)] px-6 py-5 md:px-8">
+          <div className="border-b border-white/10 px-6 py-5 md:px-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-slate-900">
+                <h2 className="text-xl font-semibold cosmic-title">
                   Recent prediction history
                 </h2>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm cosmic-copy">
                   Only predictions created while you were signed in are shown here.
                 </p>
               </div>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm cosmic-label">
                 {historyLoading ? "Loading..." : `${history.length} saved`}
               </p>
             </div>
@@ -279,7 +317,7 @@ const ProfilePage = () => {
 
           <div className="px-6 py-6 md:px-8">
             {historyError ? (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-700">
+              <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 px-5 py-4 text-rose-100">
                 {historyError}
               </div>
             ) : null}
@@ -289,14 +327,14 @@ const ProfilePage = () => {
                 {[0, 1, 2].map((item) => (
                   <div
                     key={item}
-                    className="h-28 animate-pulse rounded-[1.5rem] border border-[var(--border-soft)] bg-[var(--surface-soft)]"
+                    className="h-28 animate-pulse rounded-[1.5rem] border border-white/10 bg-white/5"
                   />
                 ))}
               </div>
             ) : history.length ? (
               <div className="space-y-4">
                 {history.map((entry) => (
-                  <article key={entry.id} className="surface-card-soft p-5">
+                  <article key={entry.id} className="cosmic-card-soft p-5">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-3">
@@ -309,11 +347,11 @@ const ProfilePage = () => {
                           >
                             {entry.result}
                           </span>
-                          <span className="text-sm text-slate-500">
+                          <span className="text-sm cosmic-label">
                             {dateFormatter.format(new Date(entry.createdAt))}
                           </span>
                         </div>
-                        <p className="mt-3 text-base font-medium text-slate-900">
+                        <p className="mt-3 text-base font-medium cosmic-title">
                           {entry.prediction}
                         </p>
                       </div>
@@ -325,7 +363,7 @@ const ProfilePage = () => {
                         .map(([key, value]) => (
                           <span
                             key={key}
-                            className="rounded-full bg-[var(--accent-soft)] px-3 py-1 text-sm text-[var(--accent-dark)]"
+                            className="rounded-full border border-cyan-400/10 bg-cyan-400/10 px-3 py-1 text-sm text-cyan-100"
                           >
                             {formatFeatureLabel(key)}: {String(value)}
                           </span>
@@ -335,11 +373,11 @@ const ProfilePage = () => {
                 ))}
               </div>
             ) : (
-              <div className="surface-card-soft px-6 py-10 text-center">
-                <h3 className="text-2xl font-semibold text-slate-900">
+              <div className="cosmic-card-soft px-6 py-10 text-center">
+                <h3 className="text-2xl font-semibold cosmic-title">
                   No saved predictions yet
                 </h3>
-                <p className="mx-auto mt-3 max-w-2xl text-slate-600">
+                <p className="mx-auto mt-3 max-w-2xl cosmic-copy">
                   Once you submit a prediction while signed in, it will appear here
                   automatically.
                 </p>
@@ -351,22 +389,43 @@ const ProfilePage = () => {
           </div>
         </motion.section>
       </div>
-    </div>
+    </CosmicFrame>
   );
 };
 
-const ProfileStat = ({ label, value }) => (
-  <div className="surface-card-soft p-4">
-    <p className="text-sm text-slate-500">{label}</p>
-    <p className="mt-3 text-2xl font-semibold text-slate-900">{value}</p>
+const CosmicFrame = ({ children }) => (
+  <div className="cosmic-page min-h-screen">
+    <ProfileStarfield />
+    <div className="cosmic-page-shell">{children}</div>
   </div>
+);
+
+const ProfileStat = ({ label, value }) => (
+  <div className="cosmic-card-soft p-4">
+    <p className="text-sm cosmic-label">{label}</p>
+    <p className="mt-3 text-2xl font-semibold cosmic-title">{value}</p>
+  </div>
+);
+
+const SocialLink = ({ href, icon: Icon, label }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noreferrer"
+    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-slate-100 transition hover:-translate-y-0.5 hover:border-cyan-300/25 hover:bg-white/8"
+  >
+    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/12 text-cyan-100">
+      <Icon className="text-lg" />
+    </span>
+    <span className="text-sm font-medium">{label}</span>
+  </a>
 );
 
 const DetailRow = ({ breakValue = false, label, value }) => (
   <div>
-    <dt className="text-sm text-slate-500">{label}</dt>
+    <dt className="text-sm cosmic-label">{label}</dt>
     <dd
-      className={`mt-1 text-sm font-medium text-slate-900 ${
+      className={`mt-1 text-sm font-medium cosmic-value ${
         breakValue ? "break-all" : ""
       }`}
     >

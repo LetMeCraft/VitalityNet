@@ -170,5 +170,191 @@
     background: #dcfce7;
     color: #15803d;
   }
+
+  .cosmic-page {
+    @apply relative overflow-hidden;
+    background:
+      radial-gradient(circle at 18% 12%, rgba(56, 189, 248, 0.16), transparent 22%),
+      radial-gradient(circle at 82% 4%, rgba(125, 211, 252, 0.1), transparent 24%),
+      linear-gradient(180deg, #030712 0%, #050816 48%, #020617 100%);
+  }
+
+  .cosmic-page-shell {
+    @apply relative z-10 px-5 py-10 md:px-8 md:py-14;
+  }
+
+  .cosmic-card {
+    @apply rounded-[2rem] border;
+    background: linear-gradient(180deg, rgba(9, 16, 31, 0.8) 0%, rgba(5, 10, 24, 0.9) 100%);
+    border-color: rgba(148, 163, 184, 0.18);
+    box-shadow: 0 24px 64px rgba(2, 6, 23, 0.42);
+    backdrop-filter: blur(14px);
+  }
+
+  .cosmic-card-soft {
+    @apply rounded-[1.5rem] border;
+    background: linear-gradient(180deg, rgba(10, 18, 34, 0.76) 0%, rgba(6, 11, 22, 0.88) 100%);
+    border-color: rgba(148, 163, 184, 0.16);
+    box-shadow: 0 18px 40px rgba(2, 6, 23, 0.3);
+    backdrop-filter: blur(12px);
+  }
+
+  .cosmic-badge {
+    @apply inline-flex rounded-full px-4 py-1 text-sm font-semibold;
+    background: rgba(34, 211, 238, 0.12);
+    border: 1px solid rgba(103, 232, 249, 0.2);
+    color: #a5f3fc;
+  }
+
+  .cosmic-title {
+    color: #f8fafc;
+  }
+
+  .cosmic-copy {
+    color: #bfdbfe;
+  }
+
+  .cosmic-label {
+    color: #8ea3ba;
+  }
+
+  .cosmic-value {
+    color: #e2e8f0;
+  }
+
+  .cosmic-action-btn {
+    @apply flex w-full items-center justify-center rounded-xl border px-4 py-3 font-medium transition;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(148, 163, 184, 0.18);
+    color: #e2e8f0;
+  }
+
+  .cosmic-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(148, 163, 184, 0.28);
+  }
+
+  .profile-starfield {
+    @apply absolute inset-0 overflow-hidden pointer-events-none;
+  }
+
+  .profile-nebula {
+    @apply absolute rounded-full blur-3xl;
+    opacity: 0.42;
+  }
+
+  .profile-nebula-left {
+    width: 24rem;
+    height: 24rem;
+    left: -8rem;
+    top: -6rem;
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.24) 0%, rgba(34, 211, 238, 0) 68%);
+  }
+
+  .profile-nebula-right {
+    width: 22rem;
+    height: 22rem;
+    right: -7rem;
+    top: 18%;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.22) 0%, rgba(96, 165, 250, 0) 70%);
+  }
+
+  .profile-star {
+    @apply absolute rounded-full;
+    background: #f8fafc;
+    box-shadow: 0 0 12px rgba(248, 250, 252, 0.6);
+    animation: profileTwinkle ease-in-out infinite;
+  }
+
+  .profile-shooting-star {
+    @apply absolute;
+    width: 10rem;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(248, 250, 252, 0.95), rgba(125, 211, 252, 0.28));
+    border-radius: 999px;
+    filter: drop-shadow(0 0 12px rgba(125, 211, 252, 0.8));
+    opacity: 0;
+    transform: rotate(-26deg);
+    animation: profileShooting linear infinite;
+  }
+
+  .star-cursor-layer {
+    @apply fixed inset-0 pointer-events-none;
+    z-index: 9999;
+  }
+
+  .cursor-tail-dot {
+    @apply fixed rounded-full;
+    width: 0.9rem;
+    height: 0.9rem;
+    opacity: 0;
+    transform-origin: center center;
+    will-change: transform, opacity;
+  }
+
+  .cursor-theme-default .cursor-tail-dot {
+    background: radial-gradient(circle, rgba(19, 38, 63, 0.95) 0%, rgba(35, 104, 116, 0.56) 44%, rgba(35, 104, 116, 0) 76%);
+    filter: blur(0.15px) drop-shadow(0 0 6px rgba(19, 38, 63, 0.18));
+  }
+
+  .cursor-theme-profile .cursor-tail-dot {
+    background: radial-gradient(circle, rgba(186, 230, 253, 0.98) 0%, rgba(125, 211, 252, 0.7) 42%, rgba(125, 211, 252, 0) 78%);
+    filter: blur(0.15px) drop-shadow(0 0 8px rgba(125, 211, 252, 0.42));
+  }
+}
+
+.star-cursor-active,
+.star-cursor-active * {
+  cursor: none !important;
+}
+
+@keyframes profileTwinkle {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes profileShooting {
+  0% {
+    opacity: 0;
+    transform: translate3d(-10rem, -6rem, 0) rotate(-26deg) scaleX(0.35);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  26% {
+    opacity: 0;
+    transform: translate3d(18rem, 12rem, 0) rotate(-26deg) scaleX(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(18rem, 12rem, 0) rotate(-26deg) scaleX(1);
+  }
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .star-cursor-active,
+  .star-cursor-active * {
+    cursor: auto !important;
+  }
+
+  .star-cursor-layer {
+    display: none;
+  }
+
+  .profile-star,
+  .profile-shooting-star {
+    animation: none;
+  }
 }
 

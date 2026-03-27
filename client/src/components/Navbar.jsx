@@ -157,7 +157,7 @@ const AccountLink = ({ initial, label, onClick, to }) => (
     onClick={onClick}
     className="inline-flex items-center gap-3 rounded-full border border-slate-600 bg-slate-700/70 px-3 py-2 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-600/90"
   >
-    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-400 text-sm font-bold text-slate-950">
+    <span className="text-base font-bold text-cyan-300">
       {initial}
     </span>
     <span className="max-w-32 truncate">{label}</span>
@@ -170,7 +170,7 @@ const MobileAccountLink = ({ initial, label, onClick, to }) => (
     onClick={onClick}
     className="flex items-center gap-3 rounded-2xl border border-slate-600 bg-slate-700/80 px-3 py-3 text-base font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-600/90"
   >
-    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-400 font-bold text-slate-950">
+    <span className="text-lg font-bold text-cyan-300">
       {initial}
     </span>
     <span className="truncate">{label}</span>

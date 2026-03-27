@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import StarCursor from "./components/StarCursor";
 import Helmet from "react-helmet";
 import Home from "./pages/Home";
 import Prediction from "./pages/Prediction";
@@ -19,6 +20,7 @@ const App = () => {
         <script src="https://mediafiles.botpress.cloud/308f960c-95e7-4cc1-aa6a-f1c653965b80/webchat/v2/config.js"></script>
       </Helmet>
       <Router>
+        <StarCursor />
         <div className="min-h-screen flex flex-col">
           <Navbar />
           <div className="flex-grow">
