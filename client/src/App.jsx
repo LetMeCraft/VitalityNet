@@ -1,14 +1,15 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Home from "./components/Home";
-import Prediction from "./components/Prediction";
-import DataInfo from "./components/DataInfo";
-import Visualization from "./components/Visualization";
 import Footer from "./components/Footer";
-import ContactUs from "./components/contact";
-import FloatBtn from "./components/FloatBtn";
-import FAQ from "./components/FAQ";
 import Helmet from "react-helmet";
+import Home from "./pages/Home";
+import Prediction from "./pages/Prediction";
+import DataInfo from "./pages/DataInfo";
+import Visualization from "./pages/Visualization";
+import ContactUs from "./pages/contact";
+import FAQ from "./pages/FAQ";
+import AuthPage from "./pages/Auth";
+import ProfilePage from "./pages/Profile";
 
 const App = () => {
   return (
@@ -28,10 +29,11 @@ const App = () => {
               <Route path="/visualization" element={<Visualization />} />
               <Route path="/contact" element={<ContactUs />} />
               <Route path="/FAQ" element={<FAQ />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Routes>
           </div>
           <Footer />
-          <FloatBtn />
         </div>
       </Router>
     </>

@@ -4,7 +4,7 @@ import predictiveAnalyticsImg from "../assets/home-predictive-analytics.jpg";
 import dataVisualizationImg from "../assets/home-data-visualization.jpg";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import Testimonials from "./Testimonials/Testimonials.jsx";
+import Testimonials from "../components/Testimonials/Testimonials.jsx";
 
 const Home = () => {
   return (

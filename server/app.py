@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from db import fetch_prediction_history, get_storage_status, save_prediction
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -51,7 +52,30 @@ def predict(features):
 
 @app.route('/health', methods=['GET'])
 def health():
-    return jsonify({'status': 'ok'})
+    return jsonify({
+        'status': 'ok',
+        'storage': get_storage_status(),
+    })
+
+@app.route('/predictions/history', methods=['GET'])
+def prediction_history():
+    try:
+        limit = int(request.args.get('limit', 10))
+    except ValueError:
+        return jsonify({'error': 'limit must be an integer value.'}), 400
+
+    limit = min(max(limit, 1), 50)
+    user_id = request.args.get('userId') or None
+    user_email = request.args.get('userEmail') or None
+
+    return jsonify({
+        'history': fetch_prediction_history(
+            limit,
+            user_id=user_id,
+            user_email=user_email,
+        ),
+        'storage': get_storage_status(),
+    })
 
 @app.route('/predict', methods=['POST'])
 def predictions():
@@ -94,6 +118,18 @@ def predictions():
         }), 400
 
     result = predict(features)
+
+    metadata = {}
+    if data.get('userId'):
+        metadata['userId'] = data['userId']
+    if data.get('userEmail'):
+        metadata['userEmail'] = data['userEmail']
+
+    try:
+        save_prediction(features, result, metadata or None)
+    except Exception as exc:
+        app.logger.warning("Prediction could not be saved to MongoDB: %s", exc)
+
     return jsonify(result)
 
 if __name__ == '__main__':

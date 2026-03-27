@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import * as Papa from "papaparse";
 import _ from "lodash";
-import Loader from "./Loader";
+import Loader from "../components/Loader";
 
 function DataInfo() {
   const [data, setData] = useState([]);

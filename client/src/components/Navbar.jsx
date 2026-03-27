@@ -2,8 +2,10 @@ import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import logo from "../assets/vitalitynet-logo.svg";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
+  const { loading, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -13,6 +15,14 @@ const Navbar = () => {
   const closeMenu = () => {
     setIsOpen(false);
   };
+
+  const fullProfileName =
+    user?.displayName?.trim() ||
+    user?.email?.split("@")[0] ||
+    "Profile";
+  const profileName = fullProfileName.split(" ")[0] || fullProfileName;
+
+  const profileInitial = profileName.charAt(0).toUpperCase();
 
   return (
     <nav className="bg-gray-800 sticky z-50 top-0" style={{ height: "5rem" }}>
@@ -48,6 +58,13 @@ const Navbar = () => {
               <NavLink to="/FAQ" onClick={closeMenu}>
                 FAQ
               </NavLink>
+              {loading ? null : user ? (
+                <AccountLink to="/profile" label={profileName} initial={profileInitial} onClick={closeMenu} />
+              ) : (
+                <NavLink to="/auth" onClick={closeMenu}>
+                  Login
+                </NavLink>
+              )}
             </div>
           </div>
           <div className="-mr-2 flex 850px:hidden">
@@ -106,6 +123,18 @@ const Navbar = () => {
             <NavLink to="/FAQ" onClick={closeMenu}>
               FAQ
             </NavLink>
+            {loading ? null : user ? (
+              <MobileAccountLink
+                to="/profile"
+                label={profileName}
+                initial={profileInitial}
+                onClick={closeMenu}
+              />
+            ) : (
+              <NavLink to="/auth" onClick={closeMenu}>
+                Login
+              </NavLink>
+            )}
           </div>
         </div>
       </div>
@@ -121,6 +150,32 @@ const NavLink = ({ to, children, onClick }) => (
     className="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium"
   >
     {children}
+  </Link>
+);
+
+const AccountLink = ({ initial, label, onClick, to }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className="inline-flex items-center gap-3 rounded-full border border-slate-600 bg-slate-700/70 px-3 py-2 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-600/90"
+  >
+    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-400 text-sm font-bold text-slate-950">
+      {initial}
+    </span>
+    <span className="max-w-32 truncate">{label}</span>
+  </Link>
+);
+
+const MobileAccountLink = ({ initial, label, onClick, to }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className="flex items-center gap-3 rounded-2xl border border-slate-600 bg-slate-700/80 px-3 py-3 text-base font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-600/90"
+  >
+    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-400 font-bold text-slate-950">
+      {initial}
+    </span>
+    <span className="truncate">{label}</span>
   </Link>
 );
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -24,6 +25,7 @@ const initialUserInput = Object.fromEntries(
 );
 
 const Prediction = () => {
+  const { user } = useAuth();
   const [userInput, setUserInput] = useState(initialUserInput);
   const [prediction, setPrediction] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -42,9 +44,17 @@ const Prediction = () => {
     setButtonDisabled(true);
     setErrorMessage("");
 
-    const payload = Object.fromEntries(
-      Object.entries(userInput).map(([key, value]) => [key, Number(value)]),
-    );
+    const payload = {
+      ...Object.fromEntries(
+        Object.entries(userInput).map(([key, value]) => [key, Number(value)]),
+      ),
+      ...(user
+        ? {
+            userId: user.uid,
+            userEmail: user.email,
+          }
+        : {}),
+    };
 
     try {
       const response = await axios.post(`${API_BASE_URL}/predict`, payload, {
