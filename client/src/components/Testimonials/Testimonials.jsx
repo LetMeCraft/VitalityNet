@@ -1,6 +1,11 @@
-import { useState, useEffect } from 'react';
-import { FaChevronLeft, FaChevronRight, FaStar, FaStarHalfAlt } from 'react-icons/fa';
-import testimonials from './testimonials';
+import { useEffect, useState } from "react";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaStar,
+  FaStarHalfAlt,
+} from "react-icons/fa";
+import testimonials from "./testimonials";
 
 function Testimonials() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -13,9 +18,9 @@ function Testimonials() {
     };
 
     checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
 
-    return () => window.removeEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   const handleNext = () => {
@@ -23,13 +28,18 @@ function Testimonials() {
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + testimonials.length) % testimonials.length);
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + testimonials.length) % testimonials.length,
+    );
   };
 
   const getVisibleTestimonials = () => {
     const end = currentIndex + itemsPerPage;
     if (end > testimonials.length) {
-      return [...testimonials.slice(currentIndex), ...testimonials.slice(0, end - testimonials.length)];
+      return [
+        ...testimonials.slice(currentIndex),
+        ...testimonials.slice(0, end - testimonials.length),
+      ];
     }
     return testimonials.slice(currentIndex, end);
   };
@@ -41,56 +51,97 @@ function Testimonials() {
 
     return (
       <>
-        {Array(fullStars).fill().map((_, i) => <FaStar key={`full-${i}`} className="text-yellow-500" />)}
-        {halfStars === 1 && <FaStarHalfAlt key="half" className="text-yellow-500" />}
-        {Array(emptyStars).fill().map((_, i) => <FaStar key={`empty-${i}`} className="text-gray-400" />)}
+        {Array(fullStars)
+          .fill()
+          .map((_, index) => (
+            <FaStar key={`full-${index}`} className="text-amber-400" />
+          ))}
+        {halfStars === 1 ? <FaStarHalfAlt key="half" className="text-amber-400" /> : null}
+        {Array(emptyStars)
+          .fill()
+          .map((_, index) => (
+            <FaStar key={`empty-${index}`} className="text-slate-300" />
+          ))}
       </>
     );
   };
 
   return (
-    <div className='flex flex-col gap-4 px-[3rem] py-2 mb-4'>
-      <div className='text-2xl text-center font-bold text-blue-800'>
-        Feedback from Our Users
+    <div className="space-y-6">
+      <div className="text-center">
+        <p className="eyebrow">Community Feedback</p>
+        <h3 className="mt-4 text-2xl font-semibold text-slate-900 md:text-3xl">
+          Feedback from our users
+        </h3>
       </div>
-      <div className='relative w-full max-w-7xl mx-auto flex justify-center items-center'>
-        <div className='absolute left-[-30px] md:left-[-35px] top-1/2 transform -translate-y-1/2'>
-          <button 
-            onClick={handlePrev} 
-            className='bg-transparent p-2 rounded-full z-10 transition duration-300 text-blue-800'
-          >
-            <FaChevronLeft size={35} />
-          </button>
-        </div>  
-        <div className='w-full flex justify-center overflow-hidden'>
-          <div className='flex transition-transform duration-500 ease-in-out gap-3'>
+
+      <div className="relative mx-auto flex w-full max-w-6xl items-center justify-center">
+        <button
+          type="button"
+          onClick={handlePrev}
+          className="absolute left-0 z-10 hidden -translate-x-1/2 rounded-full border border-slate-200 bg-white p-3 text-slate-700 shadow-md transition hover:bg-slate-50 md:block"
+          aria-label="Previous testimonials"
+        >
+          <FaChevronLeft size={18} />
+        </button>
+
+        <div className="w-full overflow-hidden">
+          <div className="flex gap-5">
             {getVisibleTestimonials().map((testimonial) => (
-              <div key={testimonial.id} className='flex-shrink-0 w-full md:w-1/3 p-4'>
-                <div className='w-full h-full p-3 bg-blue-200 rounded-md shadow-md'>
-                  <div className='flex items-center gap-4 p-2'>
-                    <img src={testimonial.image} alt={testimonial.name} className='w-16 h-16 rounded-full' />
+              <div key={testimonial.id} className="w-full flex-shrink-0 md:w-1/3">
+                <div className="surface-card-soft h-full p-6">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      className="h-14 w-14 rounded-2xl object-cover"
+                    />
                     <div>
-                      <p className='text-lg font-semibold text-blue-900'>{testimonial.name}</p>
-                      <p className='text-sm text-blue-500'>{testimonial.position}, {testimonial.company}</p>
-                      <div className='flex mt-2'>
-                        {renderStars(testimonial.rating)}
-                      </div>
+                      <p className="text-lg font-semibold text-slate-900">
+                        {testimonial.name}
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {testimonial.position}, {testimonial.company}
+                      </p>
+                      <div className="mt-2 flex gap-1">{renderStars(testimonial.rating)}</div>
                     </div>
                   </div>
-                  <p className='mt-2'>{testimonial.text}</p>
+                  <p className="mt-5 text-sm leading-7 text-slate-600 md:text-base">
+                    {testimonial.text}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className='absolute right-[-30px] md:right-[-40px] top-1/2 transform -translate-y-1/2'>
-          <button 
-            onClick={handleNext} 
-            className='bg-transparent p-2 rounded-full z-10 transition duration-300 text-blue-800 hover:text-dark-blue'
-          >
-            <FaChevronRight size={35} />
-          </button>
-        </div>
+
+        <button
+          type="button"
+          onClick={handleNext}
+          className="absolute right-0 z-10 hidden translate-x-1/2 rounded-full border border-slate-200 bg-white p-3 text-slate-700 shadow-md transition hover:bg-slate-50 md:block"
+          aria-label="Next testimonials"
+        >
+          <FaChevronRight size={18} />
+        </button>
+      </div>
+
+      <div className="flex items-center justify-center gap-3 md:hidden">
+        <button
+          type="button"
+          onClick={handlePrev}
+          className="rounded-full border border-slate-200 bg-white p-3 text-slate-700 shadow-md transition hover:bg-slate-50"
+          aria-label="Previous testimonials"
+        >
+          <FaChevronLeft size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          className="rounded-full border border-slate-200 bg-white p-3 text-slate-700 shadow-md transition hover:bg-slate-50"
+          aria-label="Next testimonials"
+        >
+          <FaChevronRight size={16} />
+        </button>
       </div>
     </div>
   );

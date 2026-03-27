@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FaGoogle } from "react-icons/fa";
+import {
+  FaGithub,
+  FaGoogle,
+  FaLinkedinIn,
+  FaPhoneAlt,
+  FaWhatsapp,
+  FaYoutube,
+} from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -28,6 +35,34 @@ const getAuthErrorMessage = (error) =>
   AUTH_ERROR_MESSAGES[error?.code] ||
   error?.message ||
   "Something went wrong while authenticating. Please try again.";
+
+const quickLinks = [
+  {
+    href: "https://github.com/yourusername",
+    icon: FaGithub,
+    label: "GitHub",
+  },
+  {
+    href: "https://www.linkedin.com/in/yourprofile",
+    icon: FaLinkedinIn,
+    label: "LinkedIn",
+  },
+  {
+    href: "tel:+1234567890",
+    icon: FaPhoneAlt,
+    label: "Call",
+  },
+  {
+    href: "https://www.youtube.com/@yourchannel",
+    icon: FaYoutube,
+    label: "YouTube",
+  },
+  {
+    href: "https://wa.me/1234567890",
+    icon: FaWhatsapp,
+    label: "WhatsApp",
+  },
+];
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -84,11 +119,7 @@ const AuthPage = () => {
 
     try {
       if (mode === "signup") {
-        await signupWithEmail(
-          formState.name,
-          formState.email,
-          formState.password,
-        );
+        await signupWithEmail(formState.name, formState.email, formState.password);
         setSuccessMessage("Account created successfully.");
       } else {
         await loginWithEmail(formState.email, formState.password);
@@ -132,95 +163,101 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-5 py-14 text-white">
-      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-        <motion.div
-          initial={{ opacity: 0, x: -60 }}
+    <div className="page-shell">
+      <div className="page-container grid gap-8 lg:items-start lg:grid-cols-[1fr_0.95fr]">
+        <motion.section
+          initial={{ opacity: 0, x: -36 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl"
+          transition={{ duration: 0.6 }}
+          className="surface-card self-start px-6 py-8 md:px-8 md:py-10"
         >
-          <span className="inline-flex rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1 text-sm font-semibold text-cyan-200">
-            Secure Access
-          </span>
-          <h1 className="mt-5 text-4xl font-black tracking-tight md:text-5xl">
-            Sign up or log in to manage your diabetes prediction journey.
+          <span className="eyebrow">Secure Access</span>
+          <h1 className="section-title mt-4">
+            Sign up or log in to save your prediction history.
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
-            Firebase Authentication will handle email and Google sign-in, while
-            MongoDB can store prediction history once you share your database
-            connection string.
+          <p className="section-copy mt-4 max-w-2xl">
+            Create an account if you want your prediction results to stay connected to
+            your profile and be available when you return.
           </p>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            <FeatureCard
-              title="Email Auth"
-              description="Create an account with email and password."
-            />
-            <FeatureCard
-              title="Google Login"
-              description="Use Firebase Google sign-in for quick access."
-            />
-            <FeatureCard
-              title="Mongo Ready"
-              description="Prediction storage hooks are prepared for MongoDB."
-            />
+          <div className="mt-8 rounded-[1.5rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] px-5 py-5">
+            <p className="text-base font-medium text-slate-900">Why log in?</p>
+            <ul className="mt-3 space-y-2 text-sm leading-7 text-slate-600 md:text-base">
+              <li>Save your prediction history securely.</li>
+              <li>Open your profile later and review past results anytime.</li>
+            </ul>
+          </div>
+
+          <div className="mt-8">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
+              Quick Links
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {quickLinks.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target={item.href.startsWith("http") ? "_blank" : undefined}
+                    rel={item.href.startsWith("http") ? "noreferrer" : undefined}
+                    aria-label={item.label}
+                    title={item.label}
+                    className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border-soft)] bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--border-strong)] hover:text-[var(--accent-dark)]"
+                  >
+                    <Icon className="text-lg" />
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
           {!isFirebaseConfigured ? (
-            <div className="mt-8 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-amber-100">
+            <div className="mt-8 rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-5 text-amber-800">
               <p className="font-semibold">
-                Firebase config is still missing, so this page is in setup mode
-                right now.
+                Firebase config is still missing, so this page is in setup mode right now.
               </p>
-              <p className="mt-2 text-sm leading-6 text-amber-50/90">
+              <p className="mt-2 text-sm leading-7">
                 Add the missing Vite env keys in `client/.env` and enable the
                 Email/Password and Google providers in Firebase Authentication.
               </p>
-              <p className="mt-3 text-sm">
-                Missing keys: {firebaseMissingKeys.join(", ")}
-              </p>
+              <p className="mt-3 text-sm">Missing keys: {firebaseMissingKeys.join(", ")}</p>
             </div>
           ) : null}
-        </motion.div>
+        </motion.section>
 
-        <motion.div
-          initial={{ opacity: 0, x: 60 }}
+        <motion.section
+          initial={{ opacity: 0, x: 36 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-8 shadow-2xl"
+          transition={{ duration: 0.6, delay: 0.05 }}
+          className="surface-card px-6 py-8 md:px-8"
         >
-          <div className="mb-6 flex rounded-full bg-white/5 p-1">
-            <ToggleButton
-              active={mode === "login"}
-              onClick={() => handleModeChange("login")}
-            >
+          <div className="mb-6 inline-flex rounded-full bg-slate-100 p-1">
+            <ToggleButton active={mode === "login"} onClick={() => handleModeChange("login")}>
               Login
             </ToggleButton>
-            <ToggleButton
-              active={mode === "signup"}
-              onClick={() => handleModeChange("signup")}
-            >
+            <ToggleButton active={mode === "signup"} onClick={() => handleModeChange("signup")}>
               Sign Up
             </ToggleButton>
           </div>
 
           {loading ? (
-            <p className="rounded-2xl bg-white/5 px-4 py-5 text-slate-300">
+            <p className="surface-card-soft px-4 py-5 text-slate-600">
               Checking your authentication status...
             </p>
           ) : user ? (
             <div className="space-y-5">
-              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-5">
-                <p className="text-sm uppercase tracking-[0.25em] text-emerald-200">
+              <div className="soft-panel p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--accent-dark)]">
                   Signed In
                 </p>
-                <h2 className="mt-3 text-2xl font-bold text-white">
+                <h2 className="mt-3 text-2xl font-semibold text-slate-900">
                   {user.displayName || user.email}
                 </h2>
-                <p className="mt-2 text-slate-300">
+                <p className="mt-2 text-slate-600">
                   {user.email || "Authenticated with Google"}
                 </p>
               </div>
@@ -229,34 +266,30 @@ const AuthPage = () => {
                 type="button"
                 onClick={handleLogout}
                 disabled={isSubmitting}
-                className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+                className={`secondary-btn w-full justify-center ${
+                  isSubmitting ? "cursor-not-allowed opacity-60" : ""
+                }`}
               >
                 {isSubmitting ? "Signing Out..." : "Sign Out"}
               </button>
 
-              <Link
-                to="/profile"
-                className="block rounded-2xl bg-cyan-500 px-5 py-3 text-center font-semibold text-slate-950 transition hover:bg-cyan-400"
-              >
+              <Link to="/profile" className="primary-btn w-full justify-center">
                 Open Profile
               </Link>
 
-              <Link
-                to="/prediction"
-                className="block rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-center font-semibold text-white transition hover:bg-white/15"
-              >
+              <Link to="/prediction" className="secondary-btn w-full justify-center">
                 Go To Prediction Page
               </Link>
             </div>
           ) : (
             <>
-              <h2 className="text-3xl font-bold text-white">
+              <h2 className="text-3xl font-semibold text-slate-900">
                 {mode === "signup" ? "Create account" : "Welcome back"}
               </h2>
-              <p className="mt-2 text-slate-400">
+              <p className="mt-3 text-sm leading-7 text-slate-600 md:text-base">
                 {mode === "signup"
-                  ? "Start with email and password, or continue with Google."
-                  : "Log in to keep your future prediction history connected to your account."}
+                  ? "Create your account to save prediction history."
+                  : "Log in to access your saved prediction history."}
               </p>
 
               <form className="mt-8 space-y-4" onSubmit={handleEmailSubmit}>
@@ -304,13 +337,13 @@ const AuthPage = () => {
                 ) : null}
 
                 {errorMessage ? (
-                  <div className="rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+                  <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                     {errorMessage}
                   </div>
                 ) : null}
 
                 {successMessage ? (
-                  <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                     {successMessage}
                   </div>
                 ) : null}
@@ -318,7 +351,11 @@ const AuthPage = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !isFirebaseConfigured}
-                  className="w-full rounded-2xl bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={`primary-btn w-full justify-center ${
+                    isSubmitting || !isFirebaseConfigured
+                      ? "cursor-not-allowed opacity-60 hover:translate-y-0"
+                      : ""
+                  }`}
                 >
                   {isSubmitting
                     ? "Please wait..."
@@ -328,42 +365,39 @@ const AuthPage = () => {
                 </button>
               </form>
 
-              <div className="my-6 flex items-center gap-3 text-sm uppercase tracking-[0.25em] text-slate-500">
-                <span className="h-px flex-1 bg-white/10" />
+              <div className="my-6 flex items-center gap-3 text-sm uppercase tracking-[0.2em] text-slate-400">
+                <span className="h-px flex-1 bg-slate-200" />
                 Or
-                <span className="h-px flex-1 bg-white/10" />
+                <span className="h-px flex-1 bg-slate-200" />
               </div>
 
               <button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={isSubmitting || !isFirebaseConfigured}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+                className={`secondary-btn w-full justify-center gap-3 ${
+                  isSubmitting || !isFirebaseConfigured
+                    ? "cursor-not-allowed opacity-60"
+                    : ""
+                }`}
               >
                 <FaGoogle className="text-lg" />
                 Continue with Google
               </button>
             </>
           )}
-        </motion.div>
+        </motion.section>
       </div>
     </div>
   );
 };
 
-const FeatureCard = ({ title, description }) => (
-  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-    <h3 className="text-lg font-bold text-white">{title}</h3>
-    <p className="mt-2 text-sm leading-6 text-slate-300">{description}</p>
-  </div>
-);
-
 const ToggleButton = ({ active, children, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${
-      active ? "bg-cyan-500 text-slate-950" : "text-slate-300 hover:text-white"
+    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+      active ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
     }`}
   >
     {children}
@@ -380,7 +414,7 @@ const FormField = ({
   value,
 }) => (
   <label className="block" htmlFor={id}>
-    <span className="mb-2 block text-sm font-medium text-slate-200">{label}</span>
+    <span className="field-label">{label}</span>
     <input
       id={id}
       name={name}
@@ -389,7 +423,7 @@ const FormField = ({
       onChange={onChange}
       placeholder={placeholder}
       required
-      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+      className="field-input"
     />
   </label>
 );

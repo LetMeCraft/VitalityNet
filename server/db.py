@@ -22,6 +22,10 @@ MONGODB_PREDICTIONS_COLLECTION = os.getenv(
   "MONGODB_PREDICTIONS_COLLECTION",
   "predictions",
 )
+MONGODB_CONTACT_COLLECTION = os.getenv(
+  "MONGODB_CONTACT_COLLECTION",
+  "contact_messages",
+)
 
 _client = None
 _database = None
@@ -52,6 +56,7 @@ def get_storage_status():
     "enabled": True,
     "database": MONGODB_DB_NAME,
     "collection": MONGODB_PREDICTIONS_COLLECTION,
+    "contactCollection": MONGODB_CONTACT_COLLECTION,
   }
 
 
@@ -94,6 +99,26 @@ def save_prediction(features, result, metadata=None):
   return str(insert_result.inserted_id)
 
 
+def save_contact_message(name, email, message, metadata=None):
+  database = get_database()
+  if database is None:
+    return None
+
+  payload = {
+    "createdAt": datetime.now(timezone.utc),
+    "name": name,
+    "email": email,
+    "message": message,
+  }
+
+  if metadata:
+    payload["metadata"] = metadata
+
+  collection = database[MONGODB_CONTACT_COLLECTION]
+  insert_result = collection.insert_one(payload)
+  return str(insert_result.inserted_id)
+
+
 def fetch_prediction_history(limit=10, user_id=None, user_email=None):
   database = get_database()
   if database is None:
@@ -121,6 +146,7 @@ def fetch_prediction_history(limit=10, user_id=None, user_email=None):
     history.append(
       {
         "id": str(document["_id"]),
+        "clientPredictionId": document.get("metadata", {}).get("clientPredictionId"),
         "createdAt": document["createdAt"].isoformat(),
         "features": document.get("features", {}),
         "result": document.get("result"),

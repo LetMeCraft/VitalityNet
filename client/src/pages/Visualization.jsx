@@ -3,7 +3,6 @@ import Plot from "react-plotly.js";
 import { motion } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 import { FaDownload } from "react-icons/fa6";
-
 import agePlot from "../assets/plots/age_plot.png";
 import BMIPlot from "../assets/plots/BMI_plot.png";
 import BloodPressurePlot from "../assets/plots/bp_plot.png";
@@ -14,22 +13,29 @@ import insulin from "../assets/plots/insulin.png";
 import pregnancies from "../assets/plots/pregnancies.png";
 import skin from "../assets/plots/skin.png";
 
-/* ---------------------------------------------
-   Generate Example PPG Waveform (Simulated)
----------------------------------------------- */
 function generateExamplePPG(samples = 2000, fs = 100) {
   const signal = [];
-  for (let i = 0; i < samples; i++) {
+  for (let i = 0; i < samples; i += 1) {
     const t = i / fs;
-    // Base pulse waveform (sinusoid + exponential decay)
     const beat = Math.sin(2 * Math.PI * 1.3 * t) * Math.exp(-2 * (t % 1)) * 0.8;
-    // Add noise and baseline drift
     const noise = 0.05 * Math.random() - 0.025;
     const baseline = 0.05 * Math.sin(2 * Math.PI * 0.05 * t);
     signal.push(beat + noise + baseline);
   }
   return signal;
 }
+
+const featurePlots = [
+  { img: agePlot, title: "Age Plot" },
+  { img: BMIPlot, title: "BMI Plot" },
+  { img: BloodPressurePlot, title: "Blood Pressure Plot" },
+  { img: CF, title: "Cystic Fibrosis Plot" },
+  { img: DPF, title: "Diabetes Pedigree Function Plot" },
+  { img: glucose, title: "Glucose Plot" },
+  { img: insulin, title: "Insulin Plot" },
+  { img: pregnancies, title: "Pregnancies Plot" },
+  { img: skin, title: "Skin Thickness Plot" },
+];
 
 const VisualizationPage = () => {
   const [modalImage, setModalImage] = useState(null);
@@ -39,7 +45,6 @@ const VisualizationPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    // Load example PPG signal automatically
     const exampleSignal = {
       name: "Example_PPG_Signal",
       data: generateExamplePPG(),
@@ -49,12 +54,16 @@ const VisualizationPage = () => {
   }, []);
 
   const calculateSummary = (signal) => {
-    if (!signal || !signal.data || signal.data.length === 0) return;
+    if (!signal || !signal.data || signal.data.length === 0) {
+      return;
+    }
+
     const arr = signal.data;
     const meanAmp = arr.reduce((a, b) => a + b, 0) / arr.length;
     const maxAmp = Math.max(...arr);
     const minAmp = Math.min(...arr);
-    const duration = arr.length / 100; // assuming 100 Hz sampling rate
+    const duration = arr.length / 100;
+
     setSummary({
       meanAmp: meanAmp.toFixed(3),
       maxAmp: maxAmp.toFixed(3),
@@ -67,161 +76,164 @@ const VisualizationPage = () => {
   const closeModal = () => setModalImage(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 py-12 px-6">
-      {/* PAGE TITLE */}
-      <motion.h1
-        initial={{ opacity: 0, y: -100 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-4xl font-extrabold mb-12 text-center text-indigo-700 border-b-4 border-indigo-300 pb-3"
-      >
-        Diabetes Prediction Data Visualization
-      </motion.h1>
-
-      {/* PPG SIGNAL VISUALIZATION */}
-      <section className="mb-20">
-        <motion.div
-          initial={{ opacity: 0, y: 100 }}
+    <div className="page-shell">
+      <div className="page-container space-y-8">
+        <motion.section
+          initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="bg-white/70 backdrop-blur-md shadow-xl rounded-3xl p-8 border border-indigo-100"
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="surface-card px-6 py-8 md:px-8 md:py-10"
         >
-          <h2 className="text-2xl font-bold text-indigo-700 mb-4 text-center">
-            PPG Signal Analysis
-          </h2>
-          <p className="text-gray-600 mb-6 text-center">
-            This example photoplethysmogram (PPG) signal simulates pulse wave activity typically
-            captured by optical sensors. Doctors can observe amplitude variations and rhythmic
-            patterns to infer cardiovascular and diabetic conditions.
-          </p>
+          <span className="eyebrow">Visual Review</span>
+          <div className="mt-4 max-w-3xl">
+            <h1 className="section-title">Diabetes prediction data visualization</h1>
+            <p className="section-copy mt-4">
+              This page combines a simulated PPG waveform with static feature charts so
+              the full project keeps one visual language while still presenting detailed
+              medical context.
+            </p>
+          </div>
+        </motion.section>
 
-          {/* Signal Info */}
-          <div className="text-center mb-6">
-            <span className="px-4 py-2 bg-indigo-100 text-indigo-700 font-semibold rounded-full shadow-sm">
-              Example Signal Loaded Automatically
-            </span>
+        <motion.section
+          initial={{ opacity: 0, y: 36 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.05 }}
+          className="surface-card px-6 py-8 md:px-8"
+        >
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-3xl">
+              <h2 className="text-2xl font-semibold text-slate-900 md:text-3xl">
+                PPG signal analysis
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-slate-600 md:text-base">
+                This example photoplethysmogram signal simulates pulse-wave activity. It
+                gives the dashboard a realistic monitoring view without requiring upload
+                support on the frontend.
+              </p>
+            </div>
+            <span className="eyebrow">Example signal loaded automatically</span>
           </div>
 
-          {/* Graph & Summary */}
-          {selectedSignal && (
-            <div>
-              <Plot
-                data={[
-                  {
-                    y: selectedSignal.data,
-                    type: "scatter",
-                    mode: "lines",
-                    line: { color: "#4F46E5", width: 2 },
-                    name: "PPG Signal",
-                  },
-                ]}
-                layout={{
-                  title: {
-                    text: `Example PPG Signal`,
-                    font: { size: 20, color: "#312e81" },
-                  },
-                  xaxis: { title: "Sample", color: "#4b5563" },
-                  yaxis: { title: "Amplitude", color: "#4b5563" },
-                  paper_bgcolor: "rgba(0,0,0,0)",
-                  plot_bgcolor: "rgba(0,0,0,0)",
-                  margin: { l: 50, r: 20, t: 50, b: 50 },
-                }}
-                config={{ responsive: true }}
-                style={{ width: "100%", height: "400px" }}
-              />
+          {selectedSignal ? (
+            <div className="mt-8 space-y-6">
+              <div className="soft-panel p-3 md:p-5">
+                <Plot
+                  data={[
+                    {
+                      y: selectedSignal.data,
+                      type: "scatter",
+                      mode: "lines",
+                      line: { color: "#2f8897", width: 2 },
+                      name: "PPG Signal",
+                    },
+                  ]}
+                  layout={{
+                    title: {
+                      text: "Example PPG Signal",
+                      font: { size: 20, color: "#13263f" },
+                    },
+                    xaxis: { title: "Sample", color: "#556a80" },
+                    yaxis: { title: "Amplitude", color: "#556a80" },
+                    paper_bgcolor: "rgba(0,0,0,0)",
+                    plot_bgcolor: "rgba(0,0,0,0)",
+                    margin: { l: 50, r: 20, t: 50, b: 50 },
+                  }}
+                  config={{ responsive: true }}
+                  style={{ width: "100%", height: "400px" }}
+                />
+              </div>
 
-              {/* Summary Table */}
-              {summary && (
-                <div className="mt-6 bg-indigo-50 p-4 rounded-xl shadow-md text-center max-w-lg mx-auto">
-                  <h3 className="text-xl font-bold text-indigo-700 mb-3">Signal Summary</h3>
-                  <div className="grid grid-cols-2 gap-4 text-gray-700">
-                    <p>
-                      <strong>Mean Amplitude:</strong> {summary.meanAmp}
-                    </p>
-                    <p>
-                      <strong>Max Amplitude:</strong> {summary.maxAmp}
-                    </p>
-                    <p>
-                      <strong>Min Amplitude:</strong> {summary.minAmp}
-                    </p>
-                    <p>
-                      <strong>Duration (s):</strong> {summary.duration}
-                    </p>
-                  </div>
+              {summary ? (
+                <div className="grid gap-4 md:grid-cols-4">
+                  <SummaryCard label="Mean Amplitude" value={summary.meanAmp} />
+                  <SummaryCard label="Max Amplitude" value={summary.maxAmp} />
+                  <SummaryCard label="Min Amplitude" value={summary.minAmp} />
+                  <SummaryCard label="Duration (s)" value={summary.duration} />
                 </div>
-              )}
+              ) : null}
             </div>
-          )}
-        </motion.div>
-      </section>
+          ) : null}
+        </motion.section>
 
-      {/* CLINICAL FEATURE VISUALIZATIONS */}
-      <motion.h2
-        initial={{ opacity: 0, y: -100 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-3xl font-bold text-indigo-700 mb-10 text-center"
-      >
-        Clinical Feature Insights
-      </motion.h2>
+        <motion.section
+          initial={{ opacity: 0, y: 36 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="space-y-5"
+        >
+          <div className="max-w-3xl">
+            <span className="eyebrow">Feature Charts</span>
+            <h2 className="section-title mt-4">Clinical feature insights</h2>
+            <p className="section-copy mt-4">
+              Open any chart to view it in a larger modal and download the underlying
+              image.
+            </p>
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {[
-          { img: agePlot, title: "Age Plot" },
-          { img: BMIPlot, title: "BMI Plot" },
-          { img: BloodPressurePlot, title: "Blood Pressure Plot" },
-          { img: CF, title: "Cystic Fibrosis Plot" },
-          { img: DPF, title: "Diabetes Pedigree Function Plot" },
-          { img: glucose, title: "Glucose Plot" },
-          { img: insulin, title: "Insulin Plot" },
-          { img: pregnancies, title: "Pregnancies Plot" },
-          { img: skin, title: "Skin Thickness Plot" },
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 100 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: i * 0.1 }}
-            className="bg-white/60 backdrop-blur-md border border-indigo-100 rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-transform hover:-translate-y-1 cursor-pointer"
-            onClick={() => openModel(item.img)}
-          >
-            <h3 className="text-lg font-semibold text-indigo-700 mb-3">{item.title}</h3>
-            <img
-              src={item.img}
-              alt={item.title}
-              className="w-full h-64 object-cover rounded-lg"
-            />
-          </motion.div>
-        ))}
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {featurePlots.map((item, index) => (
+              <motion.button
+                key={item.title}
+                type="button"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: index * 0.05 }}
+                className="surface-card overflow-hidden text-left transition-transform hover:-translate-y-1"
+                onClick={() => openModel(item.img)}
+              >
+                <img src={item.img} alt={item.title} className="h-64 w-full object-cover" />
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-slate-900">{item.title}</h3>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </motion.section>
       </div>
 
-      {/* MODAL */}
-      {modalImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 backdrop-blur-sm">
-          <div className="bg-white p-4 rounded-lg shadow-2xl flex flex-col relative max-w-4xl">
-            <div className="flex justify-end space-x-2">
-              <a href={modalImage} download>
-                <button className="p-2 text-indigo-600 hover:text-indigo-800 transition">
-                  <FaDownload className="w-6 h-6" />
-                </button>
+      {modalImage ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
+          <div className="surface-card w-full max-w-5xl p-4 md:p-6">
+            <div className="mb-4 flex justify-end gap-2">
+              <a
+                href={modalImage}
+                download
+                className="secondary-btn rounded-full p-3"
+                aria-label="Download visualization"
+              >
+                <FaDownload className="h-4 w-4" />
               </a>
               <button
+                type="button"
                 onClick={closeModal}
-                className="p-2 text-red-500 hover:text-red-700 transition"
+                className="secondary-btn rounded-full p-3"
+                aria-label="Close visualization modal"
               >
-                <IoClose className="w-7 h-7" />
+                <IoClose className="h-5 w-5" />
               </button>
             </div>
             <img
               src={modalImage}
               alt="Visualization"
-              className="rounded-lg object-contain w-full max-h-[80vh]"
+              className="max-h-[80vh] w-full rounded-[1.5rem] object-contain"
             />
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
+
+const SummaryCard = ({ label, value }) => (
+  <div className="surface-card-soft p-5">
+    <p className="text-sm text-slate-500">{label}</p>
+    <p className="mt-3 text-2xl font-semibold text-slate-900">{value}</p>
+  </div>
+);
 
 export default VisualizationPage;

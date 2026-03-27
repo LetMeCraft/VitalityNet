@@ -1,8 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import {
+  getLocalPredictionHistory,
+  mergePredictionHistories,
+  PREDICTION_HISTORY_UPDATED_EVENT,
+} from "../lib/predictionHistory";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -11,8 +16,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-IN", {
   timeStyle: "short",
 });
 
-const formatFeatureLabel = (value) =>
-  value.replace(/([A-Z])/g, " $1").trim();
+const formatFeatureLabel = (value) => value.replace(/([A-Z])/g, " $1").trim();
 
 const ProfilePage = () => {
   const { loading, logout, user } = useAuth();
@@ -25,37 +29,72 @@ const ProfilePage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  useEffect(() => {
+  const loadHistory = useCallback(async () => {
     if (!user?.uid && !user?.email) {
       setHistory([]);
-      return;
+      setHistoryError("");
+      return false;
     }
 
-    const fetchHistory = async () => {
-      setHistoryLoading(true);
-      setHistoryError("");
+    const localHistory = getLocalPredictionHistory(user);
+    setHistoryLoading(true);
+    setHistoryError("");
+    setHistory(localHistory);
 
-      try {
-        const response = await axios.get(`${API_BASE_URL}/predictions/history`, {
-          params: {
-            limit: 12,
-            userId: user?.uid,
-            userEmail: user?.email,
-          },
-        });
-        setHistory(response.data?.history || []);
-      } catch (error) {
-        const apiError =
-          error.response?.data?.error ||
-          "We couldn't load your prediction history right now.";
+    try {
+      const response = await axios.get(`${API_BASE_URL}/predictions/history`, {
+        params: {
+          limit: 12,
+          userId: user?.uid,
+          userEmail: user?.email,
+        },
+      });
+      setHistory(mergePredictionHistories(response.data?.history || [], localHistory));
+      return true;
+    } catch (error) {
+      const apiError =
+        error.response?.data?.error ||
+        "We couldn't load your prediction history right now.";
+      if (!localHistory.length) {
         setHistoryError(apiError);
-      } finally {
-        setHistoryLoading(false);
+      }
+      return false;
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  useEffect(() => {
+    const handleHistoryUpdate = () => {
+      loadHistory();
+    };
+
+    const handleWindowFocus = () => {
+      loadHistory();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        loadHistory();
       }
     };
 
-    fetchHistory();
-  }, [user]);
+    window.addEventListener(PREDICTION_HISTORY_UPDATED_EVENT, handleHistoryUpdate);
+    window.addEventListener("storage", handleHistoryUpdate);
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener(PREDICTION_HISTORY_UPDATED_EVENT, handleHistoryUpdate);
+      window.removeEventListener("storage", handleHistoryUpdate);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [loadHistory]);
 
   const handleLogout = async () => {
     setSignOutLoading(true);
@@ -69,9 +108,11 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-100 px-5 py-12 text-slate-900">
-        <div className="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <p className="text-lg text-slate-600">Loading your profile...</p>
+      <div className="page-shell">
+        <div className="page-container">
+          <div className="surface-card px-6 py-8 md:px-8">
+            <p className="text-lg text-slate-600">Loading your profile...</p>
+          </div>
         </div>
       </div>
     );
@@ -79,48 +120,38 @@ const ProfilePage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-100 px-5 py-12 text-slate-900">
-        <div className="mx-auto grid max-w-5xl gap-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            <span className="inline-flex rounded-full bg-slate-100 px-4 py-1 text-sm font-medium text-slate-600">
-              Profile Access
-            </span>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight text-slate-900">
+      <div className="page-shell">
+        <div className="page-container grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          <section className="surface-card px-6 py-8 md:px-8 md:py-10">
+            <span className="eyebrow">Profile Access</span>
+            <h1 className="section-title mt-4">
               Sign in to unlock your personal dashboard.
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-              Once you log in, you will see your account details and the
-              prediction records saved for your profile.
+            <p className="section-copy mt-4 max-w-2xl">
+              Once you log in, you will see your account details and the prediction
+              records saved for your profile.
             </p>
-          </div>
+          </section>
 
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8">
-            <p className="text-sm font-medium text-slate-500">
-              Not Signed In
-            </p>
+          <section className="surface-card px-6 py-8 md:px-8">
+            <p className="text-sm font-medium text-slate-500">Not Signed In</p>
             <h2 className="mt-3 text-2xl font-semibold text-slate-900">
               Your profile is ready when you are.
             </h2>
             <p className="mt-3 text-slate-600">
-              Log in with email or Google to view your saved prediction
-              activity.
+              Log in with email or Google to view your saved prediction activity.
             </p>
-            <Link
-              to="/auth"
-              className="mt-8 inline-flex rounded-xl bg-slate-900 px-5 py-3 font-medium text-white transition hover:bg-slate-800"
-            >
+            <Link to="/auth" className="primary-btn mt-8">
               Go To Login
             </Link>
-          </div>
+          </section>
         </div>
       </div>
     );
   }
 
   const profileName =
-    user.displayName?.trim() ||
-    user.email?.split("@")[0] ||
-    "VitalityNet User";
+    user.displayName?.trim() || user.email?.split("@")[0] || "VitalityNet User";
   const firstName = profileName.split(" ")[0] || profileName;
   const profileEmail = user.email || "Signed in with Google";
   const profileInitial = profileName.charAt(0).toUpperCase();
@@ -129,11 +160,9 @@ const ProfilePage = () => {
       if (provider.providerId === "google.com") {
         return "Google";
       }
-
       if (provider.providerId === "password") {
         return "Email & Password";
       }
-
       return provider.providerId;
     })
     .filter(Boolean);
@@ -143,43 +172,41 @@ const ProfilePage = () => {
   const providerLabel = providerNames.length ? providerNames.join(", ") : "Firebase";
 
   return (
-    <div className="min-h-screen bg-slate-100 px-5 py-12 text-slate-900">
-      <div className="mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
+    <div className="page-shell">
+      <div className="page-container space-y-8">
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
+          className="surface-card px-6 py-8 md:px-8 md:py-10"
         >
-          <div className="grid gap-8 px-6 py-8 lg:grid-cols-[1.3fr_0.8fr] lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[1.25fr_0.85fr]">
             <div>
+              <span className="eyebrow">Profile</span>
               <div className="mt-6 flex items-center gap-5">
                 {user.photoURL ? (
                   <img
                     src={user.photoURL}
                     alt={profileName}
-                    className="h-20 w-20 rounded-3xl border border-slate-200 object-cover"
+                    className="h-20 w-20 rounded-[1.5rem] border border-[var(--border-soft)] object-cover"
                   />
                 ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-cyan-400 text-3xl font-bold text-slate-950">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-cyan-300 text-3xl font-bold text-slate-950">
                     {profileInitial}
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-slate-500">Profile</p>
-                  <h1 className="mt-1 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+                  <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
                     {profileName}
                   </h1>
-                  <p className="mt-2 text-lg text-slate-600">
-                    {profileEmail}
-                  </p>
+                  <p className="mt-2 text-lg text-slate-600">{profileEmail}</p>
                 </div>
               </div>
 
-              <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-600">
-                Welcome back, {firstName}. This page keeps your account details
-                together and shows the predictions you made while signed in.
+              <p className="mt-8 max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
+                Welcome back, {firstName}. This page keeps your account details together
+                and shows the predictions you made while signed in.
               </p>
 
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -187,10 +214,7 @@ const ProfilePage = () => {
                   label="Recent Predictions"
                   value={historyLoading ? "..." : String(history.length)}
                 />
-                <ProfileStat
-                  label="Providers"
-                  value={providerLabel}
-                />
+                <ProfileStat label="Providers" value={providerLabel} />
                 <ProfileStat
                   label="Account"
                   value={user.emailVerified ? "Verified" : "Active"}
@@ -198,10 +222,8 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Account details
-              </h2>
+            <div className="surface-card-soft p-6">
+              <h2 className="text-xl font-semibold text-slate-900">Account details</h2>
               <dl className="mt-6 space-y-5">
                 <DetailRow label="Full name" value={profileName} />
                 <DetailRow label="Email" value={profileEmail} />
@@ -211,56 +233,51 @@ const ProfilePage = () => {
               </dl>
 
               <div className="mt-8 space-y-3">
-                <Link
-                  to="/prediction"
-                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-900 transition hover:bg-slate-50"
-                >
-                  <span>Create new prediction</span>
-                  <span className="text-slate-400">/</span>
+                <Link to="/prediction" className="primary-btn w-full justify-center">
+                  Create new prediction
                 </Link>
-                <Link
-                  to="/visualization"
-                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-900 transition hover:bg-slate-50"
-                >
-                  <span>Explore visualizations</span>
-                  <span className="text-slate-400">/</span>
+                <Link to="/visualization" className="secondary-btn w-full justify-center">
+                  Explore visualizations
                 </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
                   disabled={signOutLoading}
-                  className="w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={`secondary-btn w-full justify-center ${
+                    signOutLoading ? "cursor-not-allowed opacity-60" : ""
+                  }`}
                 >
                   {signOutLoading ? "Signing Out..." : "Sign Out"}
                 </button>
               </div>
             </div>
           </div>
-        </motion.div>
+        </motion.section>
 
         <motion.section
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-8 rounded-3xl border border-slate-200 bg-white shadow-sm"
+          transition={{ duration: 0.6, delay: 0.05 }}
+          className="surface-card overflow-hidden"
         >
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">
-                Recent prediction history
-              </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Only predictions created while you were signed in are shown
-                here.
+          <div className="border-b border-[var(--border-soft)] px-6 py-5 md:px-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">
+                  Recent prediction history
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Only predictions created while you were signed in are shown here.
+                </p>
+              </div>
+              <p className="text-sm text-slate-500">
+                {historyLoading ? "Loading..." : `${history.length} saved`}
               </p>
             </div>
-            <p className="text-sm text-slate-500">
-              {historyLoading ? "Loading..." : `${history.length} saved`}
-            </p>
           </div>
 
-          <div className="px-6 py-6">
+          <div className="px-6 py-6 md:px-8">
             {historyError ? (
               <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-700">
                 {historyError}
@@ -272,26 +289,23 @@ const ProfilePage = () => {
                 {[0, 1, 2].map((item) => (
                   <div
                     key={item}
-                    className="h-28 animate-pulse rounded-2xl border border-slate-200 bg-slate-100"
+                    className="h-28 animate-pulse rounded-[1.5rem] border border-[var(--border-soft)] bg-[var(--surface-soft)]"
                   />
                 ))}
               </div>
             ) : history.length ? (
               <div className="space-y-4">
                 {history.map((entry) => (
-                  <article
-                    key={entry.id}
-                    className="rounded-2xl border border-slate-200 px-5 py-5"
-                  >
+                  <article key={entry.id} className="surface-card-soft p-5">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-3">
                           <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                            className={
                               entry.result === "High Risk"
-                                ? "bg-rose-100 text-rose-700"
-                                : "bg-emerald-100 text-emerald-700"
-                            }`}
+                                ? "status-chip-high"
+                                : "status-chip-low"
+                            }
                           >
                             {entry.result}
                           </span>
@@ -306,31 +320,30 @@ const ProfilePage = () => {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {Object.entries(entry.features || {}).slice(0, 8).map(([key, value]) => (
-                        <span
-                          key={key}
-                          className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600"
-                        >
-                          {formatFeatureLabel(key)}: {String(value)}
-                        </span>
-                      ))}
+                      {Object.entries(entry.features || {})
+                        .slice(0, 8)
+                        .map(([key, value]) => (
+                          <span
+                            key={key}
+                            className="rounded-full bg-[var(--accent-soft)] px-3 py-1 text-sm text-[var(--accent-dark)]"
+                          >
+                            {formatFeatureLabel(key)}: {String(value)}
+                          </span>
+                        ))}
                     </div>
                   </article>
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
+              <div className="surface-card-soft px-6 py-10 text-center">
                 <h3 className="text-2xl font-semibold text-slate-900">
                   No saved predictions yet
                 </h3>
                 <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-                  Once you submit a prediction while signed in, it will appear
-                  here automatically.
+                  Once you submit a prediction while signed in, it will appear here
+                  automatically.
                 </p>
-                <Link
-                  to="/prediction"
-                  className="mt-6 inline-flex rounded-xl bg-slate-900 px-5 py-3 font-medium text-white transition hover:bg-slate-800"
-                >
+                <Link to="/prediction" className="primary-btn mt-6">
                   Create first prediction
                 </Link>
               </div>
@@ -343,7 +356,7 @@ const ProfilePage = () => {
 };
 
 const ProfileStat = ({ label, value }) => (
-  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+  <div className="surface-card-soft p-4">
     <p className="text-sm text-slate-500">{label}</p>
     <p className="mt-3 text-2xl font-semibold text-slate-900">{value}</p>
   </div>

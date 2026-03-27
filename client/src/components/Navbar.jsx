@@ -73,7 +73,7 @@ const Navbar = () => {
               type="button"
               className="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
               aria-controls="mobile-menu"
-              aria-expanded="false"
+              aria-expanded={isOpen}
             >
               <span className="sr-only">Open main menu</span>
               {isOpen ? (
@@ -86,7 +86,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <div
         className={`fixed top-0 right-0 h-full bg-gray-800 bg-opacity-90 z-50 transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
@@ -142,7 +141,6 @@ const Navbar = () => {
   );
 };
 
-// Custom NavLink component for internal links
 const NavLink = ({ to, children, onClick }) => (
   <Link
     to={to}

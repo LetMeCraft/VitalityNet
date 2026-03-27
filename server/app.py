@@ -3,7 +3,12 @@ import os
 import pandas as pd
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from db import fetch_prediction_history, get_storage_status, save_prediction
+from db import (
+    fetch_prediction_history,
+    get_storage_status,
+    save_contact_message,
+    save_prediction,
+)
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -124,6 +129,8 @@ def predictions():
         metadata['userId'] = data['userId']
     if data.get('userEmail'):
         metadata['userEmail'] = data['userEmail']
+    if data.get('clientPredictionId'):
+        metadata['clientPredictionId'] = data['clientPredictionId']
 
     try:
         save_prediction(features, result, metadata or None)
@@ -131,6 +138,58 @@ def predictions():
         app.logger.warning("Prediction could not be saved to MongoDB: %s", exc)
 
     return jsonify(result)
+
+
+@app.route('/contact', methods=['POST'])
+def contact():
+    data = request.get_json(silent=True) or {}
+
+    name = (data.get('name') or '').strip()
+    email = (data.get('email') or '').strip()
+    message = (data.get('message') or '').strip()
+
+    missing_fields = []
+    if not name:
+        missing_fields.append('name')
+    if not email:
+        missing_fields.append('email')
+    if not message:
+        missing_fields.append('message')
+
+    if missing_fields:
+        return jsonify({
+            'error': 'Missing required fields.',
+            'missing_fields': missing_fields,
+        }), 400
+
+    if '@' not in email or '.' not in email.split('@')[-1]:
+        return jsonify({
+            'error': 'Please enter a valid email address.',
+        }), 400
+
+    metadata = {
+        'source': 'contact-form',
+        'ipAddress': request.headers.get('X-Forwarded-For', request.remote_addr),
+        'userAgent': request.headers.get('User-Agent'),
+    }
+
+    try:
+        inserted_id = save_contact_message(name, email, message, metadata)
+    except Exception as exc:
+        app.logger.warning("Contact message could not be saved to MongoDB: %s", exc)
+        return jsonify({
+            'error': 'We could not save your message right now.',
+        }), 500
+
+    if not inserted_id:
+        return jsonify({
+            'error': 'MongoDB storage is not configured on the backend.',
+        }), 503
+
+    return jsonify({
+        'message': 'Contact message saved successfully.',
+        'id': inserted_id,
+    }), 201
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)

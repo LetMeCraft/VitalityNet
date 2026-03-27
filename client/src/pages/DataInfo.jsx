@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import * as Papa from "papaparse";
 import _ from "lodash";
+import * as Papa from "papaparse";
 import Loader from "../components/Loader";
 
 function DataInfo() {
@@ -18,7 +18,10 @@ function DataInfo() {
           header: true,
           dynamicTyping: true,
           complete: (results) => {
-            setData(results.data);
+            const rows = (results.data || []).filter((row) =>
+              Object.values(row || {}).some((value) => value !== null && value !== ""),
+            );
+            setData(rows);
           },
         });
       } catch (error) {
@@ -31,82 +34,91 @@ function DataInfo() {
 
   const handleSort = (columnName) => {
     if (sortedColumn === columnName) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortedColumn(columnName);
-      setSortDirection("asc");
+      setSortDirection((currentDirection) =>
+        currentDirection === "asc" ? "desc" : "asc",
+      );
+      return;
     }
+
+    setSortedColumn(columnName);
+    setSortDirection("asc");
   };
 
   const sortedData = _.orderBy(data, sortedColumn, sortDirection);
 
   return (
-    <div className="container mx-auto my-8">
-      <motion.h1
-        initial={{ opacity: 0, y: 150 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{
-          duration: 1,
-          type: "spring",
-          stiffness: 100,
-          delay: 0.5,
-        }}
-        className="text-3xl font-bold mb-4 text-purple-800 text-center p-2 border-b-2"
-      >
-        Data Information
-      </motion.h1>
-      {data.length > 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+    <div className="page-shell">
+      <div className="page-container space-y-8">
+        <motion.section
+          initial={{ opacity: 0, y: 36 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{
-            duration: 1,
-            type: "spring",
-            stiffness: 100,
-            delay: 0.5,
-          }}
-          className="overflow-x-auto overflow-y-auto rounded-lg shadow-lg mx-10"
-          style={{ maxHeight: "420px" }}
+          transition={{ duration: 0.6 }}
+          className="surface-card px-6 py-8 md:px-8 md:py-10"
         >
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                {Object.keys(data[0]).map((header, index) => (
-                  <th
-                    key={index}
-                    onClick={() => handleSort(header)}
-                    className="px-4 py-2 bg-purple-100 text-purple-800 sticky top-0 font-bold border cursor-pointer relative"
-                  >
-                    {header}
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs">
-                      {sortedColumn === header
-                        ? sortDirection === "asc"
-                          ? "ASC"
-                          : "DESC"
-                        : ""}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedData.map((row, index) => (
-                <tr key={index}>
-                  {Object.values(row).map((value, cellIndex) => (
-                    <td key={cellIndex} className="px-4 py-2 border">
-                      {value}
-                    </td>
+          <span className="eyebrow">Dataset Overview</span>
+          <div className="mt-4 max-w-3xl">
+            <h1 className="section-title">Data information</h1>
+            <p className="section-copy mt-4">
+              Review the diabetes dataset used across the project. You can sort every
+              column to inspect the values more comfortably.
+            </p>
+          </div>
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="table-wrap"
+        >
+          {data.length > 0 ? (
+            <div className="max-h-[70vh] overflow-auto">
+              <table className="min-w-full border-collapse text-left">
+                <thead className="table-head sticky top-0 z-10">
+                  <tr>
+                    {Object.keys(data[0]).map((header) => (
+                      <th
+                        key={header}
+                        onClick={() => handleSort(header)}
+                        className="cursor-pointer border-b border-[var(--border-soft)] px-4 py-4 text-sm font-semibold"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span>{header}</span>
+                          <span className="text-xs text-slate-500">
+                            {sortedColumn === header
+                              ? sortDirection === "asc"
+                                ? "ASC"
+                                : "DESC"
+                              : ""}
+                          </span>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedData.map((row, rowIndex) => (
+                    <tr
+                      key={`${rowIndex}-${row.Age ?? row.Glucose ?? "row"}`}
+                      className="border-b border-[var(--border-soft)] last:border-b-0"
+                    >
+                      {Object.entries(row).map(([key, value]) => (
+                        <td key={`${rowIndex}-${key}`} className="px-4 py-3 text-sm text-slate-700">
+                          {String(value)}
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </motion.div>
-      ) : (
-        <Loader />
-      )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <Loader />
+          )}
+        </motion.section>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { saveLocalPredictionEntry } from "../lib/predictionHistory";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -25,11 +26,15 @@ const initialUserInput = Object.fromEntries(
 );
 
 const Prediction = () => {
-  const { user } = useAuth();
+  const { loading, user } = useAuth();
   const [userInput, setUserInput] = useState(initialUserInput);
   const [prediction, setPrediction] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -44,10 +49,24 @@ const Prediction = () => {
     setButtonDisabled(true);
     setErrorMessage("");
 
+    if (loading) {
+      setErrorMessage("Please wait a moment while your account is being loaded.");
+      setButtonDisabled(false);
+      return;
+    }
+
+    const features = Object.fromEntries(
+      Object.entries(userInput).map(([key, value]) => [key, Number(value)]),
+    );
+
+    const clientPredictionId =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `prediction-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
     const payload = {
-      ...Object.fromEntries(
-        Object.entries(userInput).map(([key, value]) => [key, Number(value)]),
-      ),
+      ...features,
+      clientPredictionId,
       ...(user
         ? {
             userId: user.uid,
@@ -61,6 +80,14 @@ const Prediction = () => {
         headers: { "Content-Type": "application/json" },
       });
       setPrediction(response.data);
+
+      if (user) {
+        saveLocalPredictionEntry(user, {
+          clientPredictionId,
+          features,
+          result: response.data,
+        });
+      }
     } catch (error) {
       const apiError =
         error.response?.data?.error ||
@@ -72,136 +99,122 @@ const Prediction = () => {
     }
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   const isHighRisk = prediction?.result === "High Risk";
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-600 via-pink-500 to-red-400 flex flex-col items-center justify-center py-10">
-      <div className="flex flex-col sm:flex-row items-start justify-center w-full max-w-7xl px-5">
-        <motion.div
-          initial={{ opacity: 0, x: -150 }}
-          whileInView={{ opacity: 1, x: 0 }}
+    <div className="page-shell">
+      <div className="page-container space-y-8">
+        <motion.section
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{
-            duration: 1,
-            type: "spring",
-            stiffness: 100,
-            delay: 0.3,
-          }}
-          className="bg-white/30 backdrop-blur-xl rounded-2xl shadow-2xl p-10 w-full sm:w-1/2 border border-white/40"
+          transition={{ duration: 0.6 }}
+          className="surface-card px-6 py-8 md:px-8 md:py-10"
         >
-          <h1 className="text-3xl font-extrabold mb-3 text-center text-white drop-shadow-lg">
-            Clinical Diabetes Predictor
-          </h1>
-          <p className="text-center text-white/90 mb-8">
-            Enter the eight clinical values used by the Flask model to get a
-            diabetes risk prediction.
-          </p>
+          <span className="eyebrow">Prediction Workflow</span>
+          <div className="mt-4 max-w-3xl">
+            <h1 className="section-title">Clinical diabetes predictor</h1>
+            <p className="section-copy mt-4">
+              Enter the eight clinical values used by the model. The form sends the
+              input to the Flask backend and keeps signed-in prediction history connected
+              to your profile.
+            </p>
+          </div>
+        </motion.section>
 
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {fieldDefinitions.map(({ name, label, step }) => (
-                <div key={name}>
-                  <label
-                    htmlFor={name}
-                    className="block text-white font-semibold mb-2 tracking-wide"
-                  >
-                    {label}
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <motion.section
+            initial={{ opacity: 0, x: -36 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="surface-card px-6 py-8 md:px-8"
+          >
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {fieldDefinitions.map(({ label, name, step }) => (
+                  <label key={name} htmlFor={name}>
+                    <span className="field-label">{label}</span>
+                    <input
+                      id={name}
+                      type="number"
+                      name={name}
+                      step={step}
+                      min="0"
+                      required
+                      value={userInput[name]}
+                      onChange={handleChange}
+                      className="field-input"
+                    />
                   </label>
-                  <input
-                    id={name}
-                    type="number"
-                    name={name}
-                    step={step}
-                    min="0"
-                    required
-                    value={userInput[name]}
-                    onChange={handleChange}
-                    className="w-full bg-white/70 border border-purple-200 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-              ))}
-            </div>
-
-            {errorMessage ? (
-              <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {errorMessage}
+                ))}
               </div>
-            ) : null}
 
-            <div className="flex justify-center mt-8">
-              <button
-                type="submit"
-                disabled={buttonDisabled}
-                className={`py-3 px-6 rounded-xl shadow-lg text-lg font-semibold transition-all duration-300 ${
-                  buttonDisabled
-                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                    : "bg-purple-700 hover:bg-purple-900 text-white hover:shadow-xl hover:scale-105"
-                }`}
-              >
-                {buttonDisabled ? "Analyzing..." : "Predict"}
-              </button>
-            </div>
-          </form>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 150 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{
-            duration: 1,
-            type: "spring",
-            stiffness: 100,
-            delay: 0.3,
-          }}
-          className="w-full sm:w-1/2 mt-10 sm:mt-0 sm:ml-10 bg-white/20 backdrop-blur-md border border-white/40 rounded-2xl shadow-2xl p-8"
-        >
-          {!prediction ? (
-            <>
-              <h2 className="text-2xl font-bold text-white text-center mb-4">
-                How This Page Works
-              </h2>
-              <ul className="list-disc pl-6 space-y-2 text-white/90 text-justify">
-                <li>
-                  The frontend sends clinical values as JSON to the Flask API at
-                  `/predict`.
-                </li>
-                <li>
-                  The server scales the values with `scaler.pkl` and predicts
-                  with `nb.pkl`.
-                </li>
-                <li>
-                  This page now reflects the real backend behavior and no longer
-                  asks for unsupported PPG file uploads.
-                </li>
-              </ul>
-            </>
-          ) : (
-            <div
-              className={`mx-auto flex flex-col gap-5 py-6 px-4 rounded-xl text-center ${
-                isHighRisk
-                  ? "bg-red-100 border border-red-500 text-red-700"
-                  : "bg-green-100 border border-green-500 text-green-700"
-              }`}
-            >
-              <h2 className="text-3xl font-extrabold">
-                Prediction Result: {prediction.result}
-              </h2>
-              <p className="text-md font-medium">{prediction.prediction}</p>
-              {prediction.gif_url ? (
-                <img
-                  src={prediction.gif_url}
-                  alt={prediction.result}
-                  className="mx-auto rounded-xl max-h-64 object-contain"
-                />
+              {errorMessage ? (
+                <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                  {errorMessage}
+                </div>
               ) : null}
-            </div>
-          )}
-        </motion.div>
+
+              <div className="mt-8">
+                <button
+                  type="submit"
+                  disabled={buttonDisabled || loading}
+                  className={`primary-btn w-full sm:w-auto ${
+                    buttonDisabled || loading
+                      ? "cursor-not-allowed opacity-60 hover:translate-y-0"
+                      : ""
+                  }`}
+                >
+                  {buttonDisabled ? "Analyzing..." : loading ? "Preparing..." : "Predict"}
+                </button>
+              </div>
+            </form>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, x: 36 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="surface-card px-6 py-8 md:px-8"
+          >
+            {!prediction ? (
+              <div className="space-y-5">
+                <span className="eyebrow">How It Works</span>
+                <h2 className="text-2xl font-semibold text-slate-900">What happens next</h2>
+                <div className="space-y-4 text-sm leading-7 text-slate-600 md:text-base">
+                  <p>The frontend sends the clinical values to the Flask API at `/predict`.</p>
+                  <p>The backend scales the values with `scaler.pkl` and predicts with `nb.pkl`.</p>
+                  <p>
+                    If you are signed in, the prediction is also attached to your account
+                    history for the profile page.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                <span className={isHighRisk ? "status-chip-high" : "status-chip-low"}>
+                  {prediction.result}
+                </span>
+                <h2 className="text-3xl font-bold text-slate-900">
+                  Prediction Result: {prediction.result}
+                </h2>
+                <p className="text-base leading-8 text-slate-600">{prediction.prediction}</p>
+
+                {prediction.gif_url ? (
+                  <div className="soft-panel p-4">
+                    <img
+                      src={prediction.gif_url}
+                      alt={prediction.result}
+                      className="mx-auto max-h-72 rounded-2xl object-contain"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </motion.section>
+        </div>
       </div>
     </div>
   );

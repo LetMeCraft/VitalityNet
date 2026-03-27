@@ -1,134 +1,96 @@
 import { useState } from "react";
 
+const faqs = [
+  {
+    header: "What does this diabetes prediction website do?",
+    text: "This website helps users check their possible diabetes risk using health-related inputs and supportive project visuals. It is designed for self-awareness and early attention, not for final medical diagnosis.",
+  },
+  {
+    header: "How is PPG related to this project?",
+    text: "PPG, or photoplethysmography, is a light-based signal used to observe pulse-related changes in blood flow. In this project, the visualization side helps explain how signal-based health monitoring can support diabetes awareness, while the current prediction workflow focuses on the core clinical inputs used by the model.",
+  },
+  {
+    header: "Is this prediction result a medical diagnosis?",
+    text: "No. The result is only a machine-learning prediction to support self-checking and awareness. It should never replace a proper medical consultation, laboratory testing, or a doctor's diagnosis.",
+  },
+  {
+    header: "What should I do if my result shows high risk?",
+    text: "If the system shows a high-risk result, you should consult a qualified doctor as soon as possible. A high-risk prediction is a signal to seek professional advice and further medical evaluation, not to self-diagnose.",
+  },
+  {
+    header: "Why are inputs like glucose, BMI, age, and blood pressure used?",
+    text: "These inputs are commonly associated with diabetes risk and help the model estimate patterns linked to the condition. They give the system a basic clinical foundation for prediction, but real medical assessment still depends on a doctor's review and proper tests.",
+  },
+  {
+    header: "Who should use this platform?",
+    text: "This platform is best used by people who want a simple self-prediction and awareness tool. It can help users understand possible risk patterns, but all important health decisions should be made with medical guidance.",
+  },
+];
+
 const FAQ = () => {
-  return (
-    <section className="relative z-20 overflow-hidden bg-gradient-to-b from-indigo-100 to-white py-20 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4">
-        <div className="mb-12 text-center">
-          <span className="mb-2 block text-2xl font-semibold text-indigo-600 dark:text-indigo-400">
-            FAQ
-          </span>
-          <h2 className="mb-4 text-4xl font-bold text-gray-800 dark:text-white">
-            Any Questions? Look Here
-          </h2>
-          <p className="mx-auto max-w-3xl text-gray-500 dark:text-gray-300">
-            Some of the frequently asked questions
-          </p>
-        </div>
+  const [activeIndex, setActiveIndex] = useState(0);
 
-        <div className="-mx-4 flex flex-wrap">
-          <div className="w-full px-4 lg:w-1/2">
-            <AccordionItem
-              header="What is this Project?"
-              text="Our Diabetes Prediction Website offers a user-friendly platform for individuals to assess their risk of developing diabetes. By inputting demographic and health data, users receive personalized predictions generated through advanced machine learning algorithms."
-            />
-            <AccordionItem
-              header="What is BMI (Body Mass Index)?"
-              text="Body mass index (BMI) is a person's weight in kilograms divided by the square of height in meters. BMI is an inexpensive and easy screening method for weight category—underweight, healthy weight, overweight, and obesity."
-            />
-            <AccordionItem
-              header="How to calculate BMI?"
-              text="With the metric system, the formula for BMI is weight in kilograms (kg) divided by height in meters (m) squared. Since height is commonly measured in centimeters (cm), an alternate formula can be used—divide weight in kg by height in cm squared, and multiply the result by 10,000."
-            />
-          </div>
-          <div className="w-full px-4 lg:w-1/2">
-            <AccordionItem
-              header="What is DPF (Diabetes Pedigree Function)?"
-              text="DPF stands for Diabetes Pedigree Function. It is a feature commonly used in medical research and datasets, such as the Pima Indians Diabetes Dataset, to assess the genetic predisposition of an individual to diabetes based on their family history."
-            />
-            <AccordionItem
-              header="What is Skin Thickness Parameter?"
-              text="SkinThickness parameter refers to the measurement of the skinfold thickness of the triceps. This measurement is typically expressed in millimeters (mm) and is used as an indirect way to estimate the amount of subcutaneous fat present in the body."
-            />
-            <AccordionItem
-              header="What is Blood Pressure?"
-              text="Blood pressure is the amount of force your blood uses to get through your arteries. When your heart pumps, it uses force to push oxygen-rich blood out to your arteries. They bring it to your body's cells and tissues"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="absolute bottom-0 right-0 z-[-1]">
-        <svg
-          width="1440"
-          height="886"
-          viewBox="0 0 1440 886"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            opacity="0.5"
-            d="M193.307 -273.321L1480.87 1014.24L1121.85 1373.26C1121.85 1373.26 731.745 983.231 478.513 729.927C225.976 477.317 -165.714 85.6993 -165.714 85.6993L193.307 -273.321Z"
-            fill="url(#paint0_linear)"
-          />
-          <defs>
-            <linearGradient
-              id="paint0_linear"
-              x1="1308.65"
-              y1="1142.58"
-              x2="602.827"
-              y2="-418.681"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#3056D3" stopOpacity="0.36" />
-              <stop offset="1" stopColor="#F5F2FD" stopOpacity="0" />
-              <stop offset="1" stopColor="#F5F2FD" stopOpacity="0.096144" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-    </section>
-  );
-};
-
-export default FAQ;
-
-const AccordionItem = ({ header, text }) => {
-  const [active, setActive] = useState(false);
-
-  const handleToggle = () => {
-    setActive(!active);
+  const handleToggle = (index) => {
+    setActiveIndex((currentIndex) => (currentIndex === index ? -1 : index));
   };
 
   return (
-    <div className="mb-8 w-full rounded-lg bg-white p-4 shadow-md dark:bg-gray-700 sm:p-8">
-      <button
-        className={`faq-btn flex w-full items-center justify-between rounded-md p-4 text-left transition-all duration-300 ease-in-out hover:bg-gray-100 dark:hover:bg-gray-600 ${
-          active ? "bg-indigo-100 dark:bg-gray-600" : ""
-        }`}
-        onClick={handleToggle}
-      >
-        <div className="flex items-center">
-          <div className="mr-4 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-white">
-            <svg
-              className={`fill-current duration-300 ease-in-out ${
-                active ? "rotate-180 transform" : ""
-              }`}
-              width="17"
-              height="10"
-              viewBox="0 0 17 10"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7.28687 8.43257L7.28679 8.43265L7.29496 8.43985C7.62576 8.73124 8.02464 8.86001 8.41472 8.86001C8.83092 8.86001 9.22376 8.69083 9.53447 8.41713L9.53454 8.41721L9.54184 8.41052L15.7631 2.70784L15.7691 2.70231L15.7749 2.69659C16.0981 2.38028 16.1985 1.80579 15.7981 1.41393C15.4803 1.1028 14.9167 1.00854 14.5249 1.38489L8.41472 7.00806L2.29995 1.38063L2.29151 1.37286L2.28271 1.36548C1.93092 1.07036 1.38469 1.06804 1.03129 1.41393L1.01755 1.42738L1.00488 1.44184C0.69687 1.79355 0.695778 2.34549 1.0545 2.69659L1.05999 2.70196L1.06565 2.70717L7.28687 8.43257Z"
-                fill=""
-                stroke=""
-              />
-            </svg>
+    <div className="page-shell">
+      <div className="page-container space-y-8">
+        <section className="surface-card px-6 py-8 md:px-8 md:py-10">
+          <span className="eyebrow">FAQ</span>
+          <div className="mt-4 max-w-3xl">
+            <h1 className="section-title">Common questions about the prediction system</h1>
+            <p className="section-copy mt-4">
+              These answers explain how the current prediction flow, PPG-related context,
+              and medical safety guidance fit together in the project.
+            </p>
           </div>
-          <h4 className="text-lg font-semibold text-gray-800 dark:text-white">
-            {header}
-          </h4>
-        </div>
-      </button>
+        </section>
 
-      <div
-        className={`pl-12 mt-4 text-gray-600 dark:text-gray-300 ${
-          active ? "block" : "hidden"
-        }`}
-      >
-        <p className="text-base leading-relaxed">{text}</p>
+        <section className="space-y-4">
+          {faqs.map((item, index) => (
+            <AccordionItem
+              key={item.header}
+              active={activeIndex === index}
+              header={item.header}
+              onToggle={() => handleToggle(index)}
+              text={item.text}
+            />
+          ))}
+        </section>
       </div>
     </div>
   );
 };
+
+const AccordionItem = ({ active, header, onToggle, text }) => (
+  <div className="surface-card-soft overflow-hidden p-3 md:p-4">
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`flex w-full items-center justify-between rounded-[1.25rem] px-4 py-4 text-left transition ${
+        active ? "bg-[var(--accent-soft)]" : "bg-white"
+      }`}
+    >
+      <div className="pr-4">
+        <h2 className="text-lg font-semibold text-slate-900 md:text-xl">{header}</h2>
+      </div>
+      <span
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl font-medium transition ${
+          active ? "bg-[var(--accent)] text-white" : "bg-slate-100 text-slate-500"
+        }`}
+      >
+        {active ? "-" : "+"}
+      </span>
+    </button>
+
+    {active ? (
+      <div className="px-4 pb-3 pt-4">
+        <p className="max-w-5xl text-sm leading-8 text-slate-600 md:text-base">{text}</p>
+      </div>
+    ) : null}
+  </div>
+);
+
+export default FAQ;

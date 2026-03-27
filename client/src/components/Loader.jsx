@@ -1,21 +1,16 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 const Loader = () => {
   return (
-    <div className="flex flex-col justify-center items-center h-64">
+    <div className="flex h-64 flex-col items-center justify-center">
       <motion.div
-        className="w-12 h-12 rounded-full bg-purple-500"
-        animate={{
-          scale: [1, 1.5, 1],
-          opacity: [1, 0.5, 1],
-        }}
-        transition={{
-          duration: 1.5,
-          ease: "easeInOut",
-          repeat: Infinity,
-        }}
+        className="h-14 w-14 rounded-full border-4 border-cyan-100 border-t-cyan-600"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, ease: "linear", repeat: Infinity }}
       />
-      <p className="mt-4 text-purple-500">Loading data...</p>
+      <p className="mt-4 text-sm font-medium text-slate-600 md:text-base">
+        Loading data...
+      </p>
     </div>
   );
 };

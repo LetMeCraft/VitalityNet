@@ -1,72 +1,146 @@
 import { useState } from "react";
-import backgroundImage from "../assets/background.jpg";
+import axios from "axios";
 import contactBackground from "../assets/contact-bg.jpg";
 
-const ContactUs = () => {
-  const [submitted, setSubmitted] = useState(false);
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-  const handleSubmit = (event) => {
+const initialFormState = {
+  name: "",
+  email: "",
+  message: "",
+};
+
+const ContactUs = () => {
+  const [formState, setFormState] = useState(initialFormState);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormState((currentState) => ({
+      ...currentState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setSubmitted(true);
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    try {
+      await axios.post(
+        `${API_BASE_URL}/contact`,
+        {
+          name: formState.name.trim(),
+          email: formState.email.trim(),
+          message: formState.message.trim(),
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      setFormState(initialFormState);
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.error ||
+          "We could not send your message right now. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-r from-purple-500 to-pink-500 flex flex-col items-center justify-center sm:flex-row sm:justify-center pb-3 md:pb-0"
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div
-        className="w-[90%] max-w-[1000px] h-auto my-12 mx-auto grid grid-cols-1 md:grid-cols-2 p-8 rounded-2xl shadow-lg bg-gradient-to-r from-gray-200 to-blue-200 overflow-hidden"
-        style={{
-          backgroundImage: `url(${contactBackground})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="hidden md:block" />
-        <div className="flex flex-col justify-center p-5">
-          <h2 className="mb-5 text-gray-800 font-sans font-extrabold text-2xl">
-            Get in touch!
-          </h2>
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              id="name"
-              placeholder="Name"
-              className="w-full p-4 rounded-lg border-2 border-gray-300 text-lg bg-white transition-all duration-300 outline-none focus:border-indigo-400 focus:shadow-md font-sans font-extrabold"
-              required
-            />
-            <input
-              type="email"
-              id="email"
-              placeholder="Email"
-              className="w-full p-4 rounded-lg border-2 border-gray-300 text-lg bg-white transition-all duration-300 outline-none focus:border-indigo-400 focus:shadow-md font-sans font-extrabold"
-              required
-            />
-            <textarea
-              rows="8"
-              id="message"
-              placeholder="Message"
-              className="w-full p-4 rounded-lg border-2 border-gray-300 text-lg bg-white transition-all duration-300 resize-none overflow-auto outline-none focus:border-indigo-400 focus:shadow-md font-sans font-extrabold"
-              required
-            />
-            <button
-              type="submit"
-              className="mt-5 p-4 text-lg rounded-lg border-none cursor-pointer bg-indigo-500 text-white transition-colors duration-300 hover:bg-indigo-700 font-sans font-extrabold"
+    <div className="page-shell">
+      <div className="page-container">
+        <div className="surface-card overflow-hidden">
+          <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
+            <div
+              className="relative min-h-[320px] bg-cover bg-center"
+              style={{ backgroundImage: `url(${contactBackground})` }}
             >
-              Submit
-            </button>
-          </form>
-          {submitted ? (
-            <p className="mt-4 rounded-lg bg-white/80 px-4 py-3 text-sm text-gray-700">
-              Message captured in the UI. Connect this form to an email or API
-              service when you want real submissions.
-            </p>
-          ) : null}
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(19,38,63,0.88)_0%,rgba(47,136,151,0.6)_100%)]" />
+              <div className="relative flex h-full flex-col px-6 py-8 text-white md:px-8 md:py-10">
+                <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-4 py-1 text-sm font-medium text-cyan-100">
+                  Contact
+                </span>
+                <h1 className="mt-5 text-4xl font-bold tracking-tight md:text-5xl">
+                  Every prediction is a small step toward better care.
+                </h1>
+                <p className="mt-4 max-w-lg text-base leading-8 text-slate-200 md:text-lg">
+                  Share your thoughts or questions anytime. We want this experience to
+                  feel clear, supportive, and easy to trust.
+                </p>
+              </div>
+            </div>
+
+            <div className="px-6 py-8 md:px-8 md:py-10">
+              <h2 className="text-2xl font-semibold text-slate-900 md:text-3xl">
+                Get in touch
+              </h2>
+
+              <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+                <label className="block" htmlFor="name">
+                  <span className="field-label">Name</span>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="Your name"
+                    className="field-input"
+                    value={formState.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+
+                <label className="block" htmlFor="email">
+                  <span className="field-label">Email</span>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    className="field-input"
+                    value={formState.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+
+                <label className="block" htmlFor="message">
+                  <span className="field-label">Message</span>
+                  <textarea
+                    rows="7"
+                    id="message"
+                    name="message"
+                    placeholder="Tell us what you need help with"
+                    className="field-input min-h-[180px] resize-none"
+                    value={formState.message}
+                    onChange={handleChange}
+                    required
+                  />
+                </label>
+
+                {errorMessage ? (
+                  <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    {errorMessage}
+                  </p>
+                ) : null}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`primary-btn w-full sm:w-auto ${
+                    isSubmitting ? "cursor-not-allowed opacity-60 hover:translate-y-0" : ""
+                  }`}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit"}
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>
