@@ -1,9 +1,13 @@
-import pickle as pkl
 import os
-import pandas as pd
-from flask import Flask, request, jsonify
+import pickle as pkl
+import warnings
+from functools import lru_cache
+
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+
 from db import (
+    StorageUnavailableError,
     fetch_prediction_history,
     get_storage_status,
     save_contact_message,
@@ -26,13 +30,31 @@ FEATURE_COLUMNS = [
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 scaler_path = os.path.join(script_dir, 'scaler.pkl')
-scaler = pkl.load(open(scaler_path, 'rb'))
-
 file_path = os.path.join(script_dir, 'nb.pkl')
-with open(file_path, 'rb') as f:
-    model = pkl.load(f)
+
+
+@lru_cache(maxsize=1)
+def load_model_artifacts():
+    with warnings.catch_warnings(record=True) as caught_warnings:
+        warnings.simplefilter("always")
+        with open(scaler_path, 'rb') as scaler_file:
+            scaler = pkl.load(scaler_file)
+        with open(file_path, 'rb') as model_file:
+            model = pkl.load(model_file)
+
+    if any(item.category.__name__ == "InconsistentVersionWarning" for item in caught_warnings):
+        app.logger.warning(
+            "Model artifacts were created with an older scikit-learn version. "
+            "Predictions still run, but retraining the artifacts will remove this warning."
+        )
+
+    return scaler, model
+
 
 def predict(features):
+    import pandas as pd
+
+    scaler, model = load_model_artifacts()
     input_data = pd.DataFrame(
         [[features[column] for column in FEATURE_COLUMNS]],
         columns=FEATURE_COLUMNS,
@@ -175,6 +197,12 @@ def contact():
 
     try:
         inserted_id = save_contact_message(name, email, message, metadata)
+    except StorageUnavailableError as exc:
+        app.logger.warning("Contact message could not be saved to MongoDB: %s", exc)
+        return jsonify({
+            'error': 'We could not save your message right now.',
+            'storage': get_storage_status(),
+        }), 503
     except Exception as exc:
         app.logger.warning("Contact message could not be saved to MongoDB: %s", exc)
         return jsonify({

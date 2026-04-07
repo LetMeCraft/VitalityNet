@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime, timezone
 
 try:
@@ -27,8 +28,73 @@ MONGODB_CONTACT_COLLECTION = os.getenv(
   "contact_messages",
 )
 
+
+def _get_int_env(name, default):
+  try:
+    return int(os.getenv(name, str(default)))
+  except (TypeError, ValueError):
+    return default
+
+
+# Keep API requests responsive when MongoDB is unreachable.
+MONGODB_SERVER_SELECTION_TIMEOUT_MS = _get_int_env(
+  "MONGODB_SERVER_SELECTION_TIMEOUT_MS",
+  3000,
+)
+MONGODB_CONNECT_TIMEOUT_MS = _get_int_env(
+  "MONGODB_CONNECT_TIMEOUT_MS",
+  3000,
+)
+MONGODB_SOCKET_TIMEOUT_MS = _get_int_env(
+  "MONGODB_SOCKET_TIMEOUT_MS",
+  5000,
+)
+MONGODB_RETRY_COOLDOWN_SECONDS = _get_int_env(
+  "MONGODB_RETRY_COOLDOWN_SECONDS",
+  15,
+)
+
 _client = None
 _database = None
+_last_connection_error = None
+_last_connection_error_at = None
+
+
+class StorageUnavailableError(RuntimeError):
+  pass
+
+
+def _remember_connection_error(exc):
+  global _client, _database, _last_connection_error, _last_connection_error_at
+
+  _database = None
+  _last_connection_error = str(exc)
+  _last_connection_error_at = time.monotonic()
+
+  if _client is not None:
+    try:
+      _client.close()
+    except Exception:
+      pass
+
+  _client = None
+
+
+def _clear_connection_error():
+  global _last_connection_error, _last_connection_error_at
+
+  _last_connection_error = None
+  _last_connection_error_at = None
+
+
+def _get_cached_connection_error():
+  if _last_connection_error is None or _last_connection_error_at is None:
+    return None
+
+  if (time.monotonic() - _last_connection_error_at) >= MONGODB_RETRY_COOLDOWN_SECONDS:
+    return None
+
+  return _last_connection_error
 
 
 def get_storage_status():
@@ -44,9 +110,24 @@ def get_storage_status():
       "reason": "Install pymongo and python-dotenv on the backend.",
     }
 
+  if _database is not None:
+    return {
+      "enabled": True,
+      "database": MONGODB_DB_NAME,
+      "collection": MONGODB_PREDICTIONS_COLLECTION,
+      "contactCollection": MONGODB_CONTACT_COLLECTION,
+    }
+
+  cached_error = _get_cached_connection_error()
+  if cached_error:
+    return {
+      "enabled": False,
+      "reason": cached_error,
+    }
+
   try:
     get_database()
-  except Exception as exc:  # pragma: no cover - depends on runtime DB state
+  except StorageUnavailableError as exc:  # pragma: no cover - depends on runtime DB state
     return {
       "enabled": False,
       "reason": str(exc),
@@ -66,14 +147,32 @@ def get_database():
   if not MONGODB_URI or MongoClient is None:
     return None
 
-  if _database is None:
-    client_kwargs = {}
-    if ServerApi and MONGODB_URI.startswith("mongodb"):
-      client_kwargs["server_api"] = ServerApi("1")
+  cached_error = _get_cached_connection_error()
+  if cached_error:
+    raise StorageUnavailableError(cached_error)
 
-    _client = MongoClient(MONGODB_URI, **client_kwargs)
-    _client.admin.command("ping")
-    _database = _client[MONGODB_DB_NAME]
+  if _database is not None:
+    return _database
+
+  if _database is None:
+    try:
+      if _client is None:
+        client_kwargs = {
+          "serverSelectionTimeoutMS": MONGODB_SERVER_SELECTION_TIMEOUT_MS,
+          "connectTimeoutMS": MONGODB_CONNECT_TIMEOUT_MS,
+          "socketTimeoutMS": MONGODB_SOCKET_TIMEOUT_MS,
+        }
+        if ServerApi and MONGODB_URI.startswith("mongodb"):
+          client_kwargs["server_api"] = ServerApi("1")
+
+        _client = MongoClient(MONGODB_URI, **client_kwargs)
+
+      _client.admin.command("ping")
+      _database = _client[MONGODB_DB_NAME]
+      _clear_connection_error()
+    except Exception as exc:
+      _remember_connection_error(exc)
+      raise StorageUnavailableError(str(exc)) from exc
 
   return _database
 
@@ -120,7 +219,10 @@ def save_contact_message(name, email, message, metadata=None):
 
 
 def fetch_prediction_history(limit=10, user_id=None, user_email=None):
-  database = get_database()
+  try:
+    database = get_database()
+  except StorageUnavailableError:
+    return []
   if database is None:
     return []
 
