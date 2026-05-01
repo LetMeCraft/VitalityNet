@@ -13,3 +13,9 @@ server/.pytest_cache/
 Thumbs.db
 .env
 .env.*
+server/flask.out.log
+server/flask.err.log
+server/requirements.txt
+
+client/package-lock.json
+client/package.json

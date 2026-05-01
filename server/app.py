@@ -220,4 +220,10 @@ def contact():
     }), 201
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    debug_enabled = os.getenv('FLASK_DEBUG', '0') == '1'
+    app.run(
+        host='0.0.0.0',
+        port=int(os.getenv('PORT', '8000')),
+        debug=debug_enabled,
+        use_reloader=False,
+    )
